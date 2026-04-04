@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>三品牌社媒时间轴分析</title>
+<title>品牌社媒时间轴分析</title>
 <style>
 :root {
   --byd: #06B6D4; --ford: #003476; --toyota: #EB0A1E;
@@ -197,19 +197,32 @@ table.monthly-table tbody td.num { text-align: right; font-variant-numeric: tabu
   </div>
 </div>
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('timeline')">📅 时间轴</div>
-  <div class="tab" onclick="switchTab('models')">🚗 车型追踪</div>
+  <div class="tab active" onclick="switchTab('timeline')">📅 时间轴与车型追踪</div>
   <div class="tab" onclick="switchTab('hashtags')">🏷 Hashtag</div>
   <div class="tab" onclick="switchTab('summary')">📊 数据总览</div>
 </div>
 
-<!-- ── TAB: Timeline ── -->
+<!-- ── TAB: Timeline & Models ── -->
 <div id="tab-timeline" class="tab-content active">
+  <!-- 顶部汇总统计栏 -->
+  <div id="summary-bar" style="background:linear-gradient(135deg,rgba(139,92,246,.08) 0%,rgba(79,142,247,.08) 100%);border:1px solid rgba(139,92,246,.2);border-radius:12px;padding:16px;margin-bottom:20px;display:none">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:12px" id="summary-stats"></div>
+    <div style="font-size:11px;color:var(--muted);display:flex;gap:16px" id="platform-breakdown"></div>
+  </div>
+
+  <!-- 筛选器 -->
   <div class="filters">
     <label>品牌高亮：</label>
     <button class="filter-btn byd active" onclick="toggleGridBrand('byd',this)">BYD</button>
     <button class="filter-btn ford active" onclick="toggleGridBrand('ford',this)">Ford</button>
     <button class="filter-btn toyota active" onclick="toggleGridBrand('toyota',this)">Toyota</button>
+    <span style="margin-left:24px;color:var(--muted);font-size:12px">·</span>
+    <label style="margin-left:24px">日期筛选：</label>
+    <input type="date" id="date-from" placeholder="从日期" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:rgba(0,0,0,.3);color:#fff;font-size:12px">
+    <span style="color:var(--muted);margin:0 8px">至</span>
+    <input type="date" id="date-to" placeholder="至日期" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:rgba(0,0,0,.3);color:#fff;font-size:12px">
+    <button style="padding:6px 12px;background:rgba(79,142,247,.5);border:1px solid rgba(79,142,247,.6);border-radius:6px;color:#fff;font-size:12px;cursor:pointer;margin-left:8px" onclick="applyDateFilter()">筛选</button>
+    <button style="padding:6px 12px;background:rgba(100,100,100,.3);border:1px solid rgba(100,100,100,.4);border-radius:6px;color:#fff;font-size:12px;cursor:pointer;margin-left:4px" onclick="resetDateFilter()">重置</button>
     <span style="margin-left:16px;color:var(--muted);font-size:12px">·  点击格子查看月度详情报告</span>
   </div>
   <div class="legend">
@@ -223,6 +236,17 @@ table.monthly-table tbody td.num { text-align: right; font-variant-numeric: tabu
     <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>Shark</div>
   </div>
   <div class="ym-grid-wrap"><div id="ym-grid"></div></div>
+
+  <!-- 车型追踪集成区域 -->
+  <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+    <h2 style="margin-bottom:16px">🚗 车型追踪</h2>
+    <div class="model-subtabs">
+      <button class="model-subtab active-hilux" onclick="switchModelTab('Hilux',this)">📍 Toyota Hilux</button>
+      <button class="model-subtab" onclick="switchModelTab('Ranger',this)">📍 Ford Ranger</button>
+      <button class="model-subtab" onclick="switchModelTab('Shark',this)">🦈 BYD Shark</button>
+    </div>
+    <div id="model-content"></div>
+  </div>
 </div>
 
 <!-- ── Detail Panel (fixed overlay) ── -->
@@ -231,16 +255,6 @@ table.monthly-table tbody td.num { text-align: right; font-variant-numeric: tabu
     <button class="detail-close" onclick="closeDetail()">✕</button>
     <div id="detail-content"></div>
   </div>
-</div>
-
-<!-- ── TAB: Models ── -->
-<div id="tab-models" class="tab-content">
-  <div class="model-subtabs">
-    <button class="model-subtab active-hilux" onclick="switchModelTab('Hilux',this)">📍 Toyota Hilux</button>
-    <button class="model-subtab" onclick="switchModelTab('Ranger',this)">📍 Ford Ranger</button>
-    <button class="model-subtab" onclick="switchModelTab('Shark',this)">🦈 BYD Shark</button>
-  </div>
-  <div id="model-content"></div>
 </div>
 
 <!-- ── TAB: Hashtags ── -->
@@ -296,7 +310,7 @@ fetch('timeline_data.json').then(r=>r.json()).then(data=>{
 
 // ── Tab Switch ──
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i)=>{ t.classList.toggle('active', ['timeline','models','hashtags','summary'][i]===name); });
+  document.querySelectorAll('.tab').forEach((t,i)=>{ t.classList.toggle('active', ['timeline','hashtags','summary'][i]===name); });
   document.querySelectorAll('.tab-content').forEach(c=>{ c.classList.toggle('active', c.id==='tab-'+name); });
 }
 
@@ -310,26 +324,56 @@ const MONTHS_CN_FULL = ['','一','二','三','四','五','六','七','八','九'
 
 function fmtNum(n){ if(!n||isNaN(n)||n===0) return '0'; if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(0)+'K'; return String(n); }
 
-// ── Grid Brand Filter ──
+// ── Grid Brand Filter + Date Filter ──
 const gridBrands = new Set(['byd','ford','toyota']);
+let dateFrom = null, dateTo = null;
+
 function toggleGridBrand(brand, btn) {
   if(gridBrands.has(brand)) { gridBrands.delete(brand); btn.classList.remove('active'); }
   else { gridBrands.add(brand); btn.classList.add('active'); }
   applyGridFilter();
 }
+
+function applyDateFilter() {
+  const from = document.getElementById('date-from').value;
+  const to = document.getElementById('date-to').value;
+  dateFrom = from ? from.replace(/-/g,'').slice(0,7) : null;
+  dateTo = to ? to.replace(/-/g,'').slice(0,7) : null;
+  applyGridFilter();
+}
+
+function resetDateFilter() {
+  document.getElementById('date-from').value = '';
+  document.getElementById('date-to').value = '';
+  dateFrom = null;
+  dateTo = null;
+  applyGridFilter();
+}
+
 function applyGridFilter() {
   const allSelected = gridBrands.size === 3;
+  let totalPosts = 0, ttCount = 0, igCount = 0, fbCount = 0;
+
   document.querySelectorAll('#ym-grid .ym-cell:not(.empty)').forEach(cell => {
     const ym = cell.dataset.ym;
     if (!ym || !_monthly[ym]) return;
     const m = _monthly[ym];
+
+    // 日期筛选检查
+    const ymNum = ym.replace('-','');
+    let dateMatch = true;
+    if (dateFrom && ymNum < dateFrom) dateMatch = false;
+    if (dateTo && ymNum > dateTo) dateMatch = false;
+
     const cellBrands = Object.keys(m.brands).map(b => b.toLowerCase());
-    const hasMatch = cellBrands.some(b => gridBrands.has(b));
+    const hasMatch = cellBrands.some(b => gridBrands.has(b)) && dateMatch;
     cell.classList.toggle('filtered-out', !hasMatch);
+
     // 品牌圆点高亮
     cell.querySelectorAll('.cell-brand-dot').forEach(dot => {
       dot.style.opacity = gridBrands.has(dot.dataset.brand) ? '1' : '0.08';
     });
+
     // 更新帖数：只计算选中品牌
     const countEl = cell.querySelector('.cell-count');
     if (countEl) {
@@ -338,7 +382,38 @@ function applyGridFilter() {
         : Object.entries(m.brands).filter(([b]) => gridBrands.has(b.toLowerCase())).reduce((s,[,v])=>s+v.posts,0);
       countEl.textContent = n + '帖';
     }
+
+    // 累计汇总数据
+    if (hasMatch) {
+      totalPosts += (allSelected ? m.totalPosts : Object.entries(m.brands).filter(([b]) => gridBrands.has(b.toLowerCase())).reduce((s,[,v])=>s+v.posts,0));
+      ttCount += m.plats.tt;
+      igCount += m.plats.ig;
+      fbCount += m.plats.fb;
+    }
   });
+
+  // 更新顶部汇总栏
+  updateSummaryBar(totalPosts, ttCount, igCount, fbCount);
+}
+
+function updateSummaryBar(total, tt, ig, fb) {
+  const bar = document.getElementById('summary-bar');
+  if (total === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'block';
+  document.getElementById('summary-stats').innerHTML = `
+    <div style="padding:10px;background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);border-radius:8px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:#fff">${total}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">筛选后总帖数</div>
+    </div>
+  `;
+  document.getElementById('platform-breakdown').innerHTML = `
+    <div>🎵 TikTok <span style="color:#fff;font-weight:700">${tt}</span> 帖</div>
+    <div>📷 Instagram <span style="color:#fff;font-weight:700">${ig}</span> 帖</div>
+    <div>👍 Facebook <span style="color:#fff;font-weight:700">${fb}</span> 帖</div>
+  `;
 }
 
 // ── Build Year×Month Grid ──
@@ -411,14 +486,26 @@ function renderModelPage(model) {
   const brandFor = {Hilux:'Toyota',Ranger:'Ford',Shark:'BYD'};
   const colorFor = {Hilux:'#ffa0a0',Ranger:'#7ba4ff',Shark:'#67e8f9'};
   const color = colorFor[model];
-  const allPosts = [
+  let allPosts = [
     ...posts.tiktok.map(p=>({...p,plat:'tt',eng:p.play||0})),
     ...posts.instagram.map(p=>({...p,plat:'ig',eng:p.like||0})),
     ...posts.facebook.map(p=>({...p,plat:'fb',eng:p.reactions||0})),
   ].sort((a,b)=>a.date.localeCompare(b.date));
 
+  // 应用日期筛选
+  if (dateFrom || dateTo) {
+    allPosts = allPosts.filter(p => {
+      const pym = p.date.slice(0,7).replace('-','');
+      if (dateFrom && pym < dateFrom) return false;
+      if (dateTo && pym > dateTo) return false;
+      return true;
+    });
+  }
+
   const totalAll = allPosts.length;
-  const totalTT = posts.tiktok.length, totalIG = posts.instagram.length, totalFB = posts.facebook.length;
+  const totalTT = allPosts.filter(p=>p.plat==='tt').length;
+  const totalIG = allPosts.filter(p=>p.plat==='ig').length;
+  const totalFB = allPosts.filter(p=>p.plat==='fb').length;
   const bestPost = [...allPosts].sort((a,b)=>b.eng-a.eng)[0];
   const bestEng = bestPost ? bestPost.eng : 0;
 
