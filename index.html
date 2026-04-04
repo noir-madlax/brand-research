@@ -171,36 +171,15 @@ body {
 .sidebar-count-item .icon { width: 13px; height: 13px; flex-shrink: 0; opacity: .6; }
 .sidebar-count-num { font-size: 11px; font-weight: 700; color: var(--text-dim); }
 
-/* ── Main + Right panel ── */
-.main-wrap { flex: 1; min-width: 0; display: flex; align-items: flex-start; }
-.main { flex: 1; min-width: 0; padding: 18px 20px; }
+/* ── Main ── */
+.main-wrap { flex: 1; min-width: 0; }
+.main { padding: 18px 20px; }
 
-/* ── Right panel (heatmap at top) ── */
-.right-panel {
-  width: 340px; flex-shrink: 0;
-  background: #fff; border-left: 1px solid var(--border);
-  position: sticky; top: 50px; height: calc(100vh - 50px);
-  overflow-y: auto; padding: 0;
-}
-.right-panel-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  background: #fafbfc;
-  cursor: pointer; user-select: none;
-}
-.right-panel-title {
-  font-size: 11px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 6px;
-}
-.right-panel-title .accent-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--blue); flex-shrink: 0;
-}
-.right-panel-toggle { font-size: 13px; color: var(--text-dim); transition: transform .2s; line-height: 1; }
-.right-panel-toggle.collapsed { transform: rotate(-90deg); }
-.right-panel-body { padding: 14px 14px 10px; }
-.right-panel.collapsed .right-panel-body { display: none; }
+/* Heatmap panel collapsible */
+.heatmap-panel-body { padding: 14px 16px 12px; }
+.panel.collapsed .heatmap-panel-body { display: none; }
+.panel-toggle { font-size: 13px; color: var(--text-dim); transition: transform .2s; line-height: 1; cursor: pointer; }
+.panel-toggle.collapsed { transform: rotate(-90deg); }
 
 /* Heatmap */
 .heatmap-range-label { font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
@@ -571,11 +550,41 @@ body {
     </div>
   </nav>
 
-  <!-- Main + Right panel wrapper -->
+  <!-- Main wrapper -->
   <div class="main-wrap">
-
-    <!-- Main content -->
     <main class="main">
+
+      <!-- Heatmap panel (collapsible, top of main) -->
+      <div class="panel" id="heatmap-panel">
+        <div class="panel-header" style="cursor:pointer;user-select:none" onclick="toggleHeatmapPanel()">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            发布热力图
+            <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:4px" id="timeline-range-label"></span>
+          </div>
+          <span class="panel-toggle" id="heatmap-panel-toggle">&#9660;</span>
+        </div>
+        <div class="heatmap-panel-body">
+          <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
+            <span id="heatmap-day-hint-text"></span>
+            <button class="clear-btn" onclick="clearDayFilter()">全部</button>
+          </div>
+          <div class="heatmap-wrap">
+            <table class="heatmap-table" id="timeline-table"></table>
+          </div>
+          <div class="heatmap-legend">
+            <span class="heatmap-legend-label">少</span>
+            <div class="heatmap-legend-squares">
+              <div class="heatmap-legend-sq heat-1"></div>
+              <div class="heatmap-legend-sq heat-2"></div>
+              <div class="heatmap-legend-sq heat-3"></div>
+              <div class="heatmap-legend-sq heat-4"></div>
+              <div class="heatmap-legend-sq heat-5"></div>
+            </div>
+            <span class="heatmap-legend-label">多</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Active filter tags -->
       <div id="active-filter-tags" class="filter-tags hidden"></div>
@@ -625,39 +634,6 @@ body {
       </div>
 
     </main>
-
-    <!-- Right panel: heatmap -->
-    <aside class="right-panel" id="right-panel">
-      <div class="right-panel-header" onclick="toggleRightPanel()">
-        <div class="right-panel-title">
-          <div class="accent-dot"></div>
-          发布热力图
-        </div>
-        <span class="right-panel-toggle" id="right-panel-toggle">&#9660;</span>
-      </div>
-      <div class="right-panel-body">
-        <div class="heatmap-range-label" id="timeline-range-label"></div>
-        <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
-          <span id="heatmap-day-hint-text"></span>
-          <button class="clear-btn" onclick="clearDayFilter()">全部</button>
-        </div>
-        <div class="heatmap-wrap">
-          <table class="heatmap-table" id="timeline-table"></table>
-        </div>
-        <div class="heatmap-legend">
-          <span class="heatmap-legend-label">少</span>
-          <div class="heatmap-legend-squares">
-            <div class="heatmap-legend-sq heat-1"></div>
-            <div class="heatmap-legend-sq heat-2"></div>
-            <div class="heatmap-legend-sq heat-3"></div>
-            <div class="heatmap-legend-sq heat-4"></div>
-            <div class="heatmap-legend-sq heat-5"></div>
-          </div>
-          <span class="heatmap-legend-label">多</span>
-        </div>
-      </div>
-    </aside>
-
   </div><!-- /main-wrap -->
 </div><!-- /app-layout -->
 
@@ -670,7 +646,7 @@ let filteredPosts = [];
 let currentPage = 1;
 let perPage = 20;
 let selectedDay = null;
-let rightPanelCollapsed = false;
+let heatmapPanelCollapsed = false;
 
 const filters = {
   brands:    new Set(['all']),
@@ -703,12 +679,12 @@ fetch('timeline_data.json')
   });
 
 /* ══════════════════════════════════════════
-   Right panel collapse
+   Heatmap panel collapse
 ══════════════════════════════════════════ */
-function toggleRightPanel() {
-  rightPanelCollapsed = !rightPanelCollapsed;
-  document.getElementById('right-panel').classList.toggle('collapsed', rightPanelCollapsed);
-  document.getElementById('right-panel-toggle').classList.toggle('collapsed', rightPanelCollapsed);
+function toggleHeatmapPanel() {
+  heatmapPanelCollapsed = !heatmapPanelCollapsed;
+  document.getElementById('heatmap-panel').classList.toggle('collapsed', heatmapPanelCollapsed);
+  document.getElementById('heatmap-panel-toggle').classList.toggle('collapsed', heatmapPanelCollapsed);
 }
 
 /* ══════════════════════════════════════════
