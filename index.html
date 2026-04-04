@@ -1217,8 +1217,11 @@ function goPage(n) {
 /* ══════════════════════════════════════════
    Sales Process (always visible)
 ══════════════════════════════════════════ */
-const STAGE_ORDER = [
-  '项目战略官宣','概念/设计图首发','实车/路测首曝',
+// 中国区平台列表（当筛选包含这些平台时才显示"工信部申报曝光"）
+const CN_PLATFORMS = new Set(['weibo','douyin','xiaohongshu','wechat','bilibili','微博','抖音','小红书','微信','哔哩哔哩']);
+
+const STAGE_ORDER_BASE = [
+  '项目战略官宣','概念/设计图首发','工信部申报曝光','实车/路测首曝',
   '核心技术/配置发布','预售开启','正式上市','销量公布','车型常规宣传'
 ];
 
@@ -1227,6 +1230,14 @@ let activeStage = null;
 function renderSalesProcess() {
   const tabsEl   = document.getElementById('stage-tabs');
   const panelsEl = document.getElementById('stage-panels');
+
+  // 判断当前筛选的帖子是否包含中国区平台数据
+  const hasCnPlatform = filteredPosts.some(p => CN_PLATFORMS.has(p.platform));
+
+  // 动态生成 STAGE_ORDER：无中国区平台数据时过滤掉"工信部申报曝光"
+  const STAGE_ORDER = hasCnPlatform
+    ? STAGE_ORDER_BASE
+    : STAGE_ORDER_BASE.filter(s => s !== '工信部申报曝光');
 
   // Build staged map from currently filtered posts
   const staged = {};
@@ -1251,7 +1262,8 @@ function renderSalesProcess() {
     if (s && staged[s]) staged[s].push(p);
   });
 
-  if (!activeStage || !staged[activeStage]) {
+  // 若当前 activeStage 不在本次有效 STAGE_ORDER 中（如"工信部申报曝光"被隐藏），重置
+  if (!activeStage || !STAGE_ORDER.includes(activeStage) || !staged[activeStage]) {
     activeStage = STAGE_ORDER.find(s => staged[s].length > 0) || STAGE_ORDER[0];
   }
 
