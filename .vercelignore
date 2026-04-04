@@ -1,0 +1,6 @@
+output/
+output.zip
+__MACOSX/
+*.csv
+*.py
+.DS_Store
