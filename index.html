@@ -85,10 +85,10 @@ body {
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 200px; flex-shrink: 0;
+  width: 220px; flex-shrink: 0;
   background: #fff;
   border-right: 1px solid var(--border);
-  padding: 18px 0;
+  padding: 18px 0 24px;
   position: sticky; top: 50px; height: calc(100vh - 50px); overflow-y: auto;
 }
 .sidebar-section { margin-bottom: 20px; }
@@ -247,10 +247,10 @@ body {
 .stat-card.active.platform-ig  .stat-card-value { color: #be185d; }
 .stat-card.active.platform-fb  .stat-card-value { color: var(--ford); }
 
-/* ── Two-column layout ── */
+/* ── Two-column layout (launch report only, full width) ── */
 .two-col {
-  display: grid; grid-template-columns: 320px 1fr; gap: 14px;
-  margin-bottom: 14px; align-items: start;
+  display: block;
+  margin-bottom: 14px;
 }
 
 /* ── Section panel ── */
@@ -277,48 +277,61 @@ body {
 }
 .panel-body { padding: 14px 16px; }
 
-/* ── Heatmap (left column) ── */
+/* ── Heatmap in sidebar ── */
+.sidebar-heatmap-section {
+  padding: 10px 10px 6px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+.sidebar-heatmap-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  color: var(--text-dim); text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-heatmap-range {
+  font-size: 9.5px; color: var(--text-dim); font-weight: 400;
+  letter-spacing: 0; text-transform: none;
+}
 .heatmap-wrap { overflow-x: auto; }
 .heatmap-table {
-  width: 100%; border-collapse: collapse; font-size: 11px;
+  width: 100%; border-collapse: collapse; font-size: 10px;
 }
 .heatmap-table th {
-  padding: 5px 3px; text-align: center;
-  color: var(--text-dim); font-weight: 600; font-size: 10.5px;
-  background: var(--card-alt);
+  padding: 3px 2px; text-align: center;
+  color: var(--text-dim); font-weight: 600; font-size: 9.5px;
+  background: transparent;
   border-bottom: 1px solid var(--border);
-  border-right: 1px solid var(--border);
 }
-.heatmap-table th:first-child { width: 44px; }
+.heatmap-table th:first-child { width: 30px; text-align: left; }
 .heatmap-table td {
-  padding: 5px 3px; text-align: center;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  color: var(--text-dim); font-size: 10.5px;
-  transition: all .15s;
+  padding: 3px 2px; text-align: center;
+  color: var(--text-dim); font-size: 9.5px;
+  transition: all .15s; border-radius: 3px;
 }
 .heatmap-table td.has-data {
   cursor: pointer; font-weight: 700; color: #374151;
 }
 .heatmap-table td.has-data:hover { background: var(--blue-dim) !important; color: var(--blue); }
-.heatmap-table td.day-selected { background: var(--blue) !important; color: #fff !important; }
-.heatmap-table td.day-dimmed { opacity: .25; }
+.heatmap-table td.day-selected { background: var(--blue) !important; color: #fff !important; border-radius: 3px; }
+.heatmap-table td.day-dimmed { opacity: .2; }
 /* heat scale */
-.heat-1 { background: rgba(37,99,235,.06); }
-.heat-2 { background: rgba(37,99,235,.13); }
-.heat-3 { background: rgba(37,99,235,.22); }
-.heat-4 { background: rgba(37,99,235,.33); }
-.heat-5 { background: rgba(37,99,235,.46); }
+.heat-1 { background: rgba(37,99,235,.07); }
+.heat-2 { background: rgba(37,99,235,.15); }
+.heat-3 { background: rgba(37,99,235,.26); }
+.heat-4 { background: rgba(37,99,235,.38); }
+.heat-5 { background: rgba(37,99,235,.52); }
 
-/* day view hint */
+/* day view hint in sidebar */
 .heatmap-day-hint {
-  font-size: 11px; color: var(--blue); padding: 6px 16px 10px;
+  font-size: 10.5px; color: var(--blue);
+  padding: 5px 2px 2px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .heatmap-day-hint .clear-btn {
   background: none; border: 1px solid var(--blue-mid);
-  border-radius: 4px; color: var(--blue); font-size: 11px;
-  padding: 2px 8px; cursor: pointer;
+  border-radius: 4px; color: var(--blue); font-size: 10px;
+  padding: 1px 6px; cursor: pointer; white-space: nowrap;
 }
 .heatmap-day-hint .clear-btn:hover { background: var(--blue-dim); }
 
@@ -570,6 +583,21 @@ body {
         <span id="sidebar-fb-num" style="font-size:11px;font-weight:700;color:var(--text-dim)">—</span>
       </div>
     </div>
+
+    <!-- Heatmap section -->
+    <div class="sidebar-heatmap-section">
+      <div class="sidebar-heatmap-title">
+        发布热力图
+        <span class="sidebar-heatmap-range" id="timeline-range-label"></span>
+      </div>
+      <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
+        <span id="heatmap-day-hint-text"></span>
+        <button class="clear-btn" onclick="clearDayFilter()">全部</button>
+      </div>
+      <div class="heatmap-wrap">
+        <table class="heatmap-table" id="timeline-table"></table>
+      </div>
+    </div>
   </nav>
 
   <!-- Main -->
@@ -650,29 +678,9 @@ body {
     <!-- Stats row -->
     <div class="stats-row" id="stats-row"></div>
 
-    <!-- Two-column: heatmap left, launch report right -->
+    <!-- Launch report (full width, shown when single brand+model selected) -->
     <div class="two-col" id="two-col-section">
-      <!-- Heatmap (left) -->
-      <div class="panel no-margin" id="timeline-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <div class="accent-dot"></div>
-            发布热力图
-          </div>
-          <div style="font-size:10.5px;color:var(--text-dim)" id="timeline-range-label"></div>
-        </div>
-        <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
-          <span id="heatmap-day-hint-text"></span>
-          <button class="clear-btn" onclick="clearDayFilter()">显示全部</button>
-        </div>
-        <div class="panel-body" style="padding:10px 12px">
-          <div class="heatmap-wrap">
-            <table class="heatmap-table" id="timeline-table"></table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Launch report (right) -->
+      <!-- Launch report -->
       <div class="panel no-margin" id="launch-report-panel" style="display:none">
         <div class="panel-header">
           <div class="panel-title">
