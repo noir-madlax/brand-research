@@ -116,6 +116,22 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', 'PingFan
       </div>
     </div>
     <div>
+      <label class="filter-label">内容类型</label>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="content-type" data-value="all">全部</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Product">产品</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Campaign">营销活动</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Tech & Safety">技术安全</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Brand">品牌价值</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Owner & UGC">用户内容</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Lifestyle & Scenario">生活方式</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Guide">导购干货</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Milestone">成就里程</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Service">服务售后</button>
+        <button class="filter-btn active" data-filter="content-type" data-value="Creative & Hot Topic">创意热点</button>
+      </div>
+    </div>
+    <div>
       <label class="filter-label">日期范围</label>
       <div class="date-inputs" style="gap: 4px;">
         <input type="date" id="date-from" title="开始日期">
@@ -168,6 +184,7 @@ const postsPerPage = 20;
 const filters = {
   brands: new Set(['all']),
   models: new Set(['all']),
+  contentTypes: new Set(['all']),
   platforms: new Set(['tiktok', 'instagram', 'facebook']),
   dateFrom: null,
   dateTo: null,
@@ -225,6 +242,29 @@ function initUI() {
       filters.models.clear();
       filters.models.add('all');
       updateModelOptions();
+      applyFilters();
+    });
+  });
+
+  // 内容类型筛选
+  document.querySelectorAll('[data-filter="content-type"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const val = e.target.dataset.value;
+      if (val === 'all') {
+        filters.contentTypes.clear();
+        filters.contentTypes.add('all');
+        document.querySelectorAll('[data-filter="content-type"]').forEach(b => {
+          b.classList.toggle('active', true);
+        });
+      } else {
+        filters.contentTypes.delete('all');
+        if (filters.contentTypes.has(val)) {
+          filters.contentTypes.delete(val);
+        } else {
+          filters.contentTypes.add(val);
+        }
+        updateContentTypeButtons();
+      }
       applyFilters();
     });
   });
@@ -334,6 +374,17 @@ function updateModelButtons() {
   });
 }
 
+function updateContentTypeButtons() {
+  document.querySelectorAll('[data-filter="content-type"]').forEach(btn => {
+    const val = btn.dataset.value;
+    if (val === 'all') {
+      btn.classList.toggle('active', filters.contentTypes.size === 0 || filters.contentTypes.has('all'));
+    } else {
+      btn.classList.toggle('active', filters.contentTypes.has(val));
+    }
+  });
+}
+
 // 根据选中的车型自动选中品牌
 function autoSelectBrandForModel(model) {
   // 需要根据模型名称推断品牌
@@ -373,6 +424,13 @@ function updateFilterTags() {
     });
   }
 
+  // 内容类型标签
+  if (!filters.contentTypes.has('all') && filters.contentTypes.size > 0) {
+    Array.from(filters.contentTypes).forEach(ct => {
+      tags.push({ type: 'content-type', value: ct, display: ct });
+    });
+  }
+
   // 平台标签
   if (filters.platforms.size !== 3) {
     Array.from(filters.platforms).forEach(p => {
@@ -409,6 +467,10 @@ function removeFilterTag(type, value) {
     filters.models.delete(value);
     if (filters.models.size === 0) filters.models.add('all');
     updateModelButtons();
+  } else if (type === 'content-type') {
+    filters.contentTypes.delete(value);
+    if (filters.contentTypes.size === 0) filters.contentTypes.add('all');
+    updateContentTypeButtons();
   } else if (type === 'platform') {
     filters.platforms.delete(value);
     if (filters.platforms.size === 0) {
@@ -448,6 +510,10 @@ function applyFilters() {
     if (!filters.models.has('all')) {
       const hasModel = Array.from(filters.models).some(m => post.models && post.models.includes(m));
       if (!hasModel) return false;
+    }
+    // 内容类型筛选
+    if (!filters.contentTypes.has('all')) {
+      if (!filters.contentTypes.has(post.content_type)) return false;
     }
     // 平台筛选
     if (!filters.platforms.has(post.platform)) return false;
@@ -642,12 +708,62 @@ function renderContentList() {
       if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
     }
 
+    // 内容类型中英文映射
+    const contentTypeNameMap = {
+      'Product': '产品 Product',
+      'Campaign': '营销活动 Campaign',
+      'Tech & Safety': '技术安全 Tech & Safety',
+      'Brand': '品牌价值 Brand',
+      'Owner & UGC': '用户内容 Owner & UGC',
+      'Lifestyle & Scenario': '生活方式 Lifestyle',
+      'Guide': '导购干货 Guide',
+      'Milestone': '成就里程 Milestone',
+      'Service': '服务售后 Service',
+      'Creative & Hot Topic': '创意热点 Creative',
+      '其他': '其他 Other',
+    };
+
+    // 内容类型标签颜色映射
+    const contentTypeColorMap = {
+      'Product': 'rgba(59,130,246,.15)',
+      'Campaign': 'rgba(236,72,153,.15)',
+      'Tech & Safety': 'rgba(16,185,129,.15)',
+      'Brand': 'rgba(139,92,246,.15)',
+      'Owner & UGC': 'rgba(245,158,11,.15)',
+      'Lifestyle & Scenario': 'rgba(8,145,178,.15)',
+      'Guide': 'rgba(249,115,22,.15)',
+      'Milestone': 'rgba(168,85,247,.15)',
+      'Service': 'rgba(52,211,153,.15)',
+      'Creative & Hot Topic': 'rgba(244,63,94,.15)',
+      '其他': 'rgba(107,114,128,.15)',
+    };
+
+    const contentTypeTextColorMap = {
+      'Product': '#3b82f6',
+      'Campaign': '#ec4899',
+      'Tech & Safety': '#10b981',
+      'Brand': '#8b5cf6',
+      'Owner & UGC': '#f59e0b',
+      'Lifestyle & Scenario': '#0891b2',
+      'Guide': '#f97316',
+      'Milestone': '#a855f7',
+      'Service': '#34d399',
+      'Creative & Hot Topic': '#f43f5e',
+      '其他': '#6b7280',
+    };
+
+    const displayContentType = contentTypeNameMap[post.content_type] || contentTypeNameMap['其他'];
+
     return `
       <div class="content-card" ${clickHandler} style="${post.url ? 'cursor:pointer' : ''}">
         <div class="card-meta">
           <span class="card-badge ${classMap[post.platform]}">${badgeMap[post.platform]} ${post.platform}</span>
           <span style="color:var(--muted)">${post.date}</span>
           <span style="color:var(--accent);font-weight:600;margin-left:auto">${post.brand}</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="display:inline-block;padding:2px 8px;background:${contentTypeColorMap[post.content_type] || contentTypeColorMap['其他']};color:${contentTypeTextColorMap[post.content_type] || contentTypeTextColorMap['其他']};border-radius:12px;font-size:11px;font-weight:600">${displayContentType}</span>
+          ${post.models && post.models.length > 0 ? `<span style="display:inline-block;padding:2px 8px;background:rgba(79,142,247,.1);color:var(--accent);border-radius:12px;font-size:11px;font-weight:600">${post.models.join(', ')}</span>` : ''}
         </div>
         <div class="card-text">${post.text}</div>
         <div class="card-stats">${statsHtml}</div>
