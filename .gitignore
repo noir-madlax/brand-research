@@ -1,0 +1,12 @@
+# 大型数据文件（不纳入 git）
+output/
+output.zip
+__MACOSX/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.pyc

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三品牌社媒时间轴分析</title>
+<style>
+:root {
+  --byd: #06B6D4; --ford: #003476; --toyota: #EB0A1E;
+  --byd-light: #e0f9fb; --ford-light: #eef2ff; --toyota-light: #fff0f0;
+  --tt: #010101; --ig: #C13584; --fb: #1877F2;
+  --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a;
+  --text: #e8e9f0; --muted: #7b7f8e; --accent: #4f8ef7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', 'PingFang SC', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
+/* ── Header ── */
+.header { background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%); border-bottom: 1px solid var(--border); padding: 28px 40px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 22px; font-weight: 700; color: #fff; }
+.header .sub { font-size: 13px; color: var(--muted); }
+/* ── Nav Tabs ── */
+.tabs { display: flex; gap: 8px; padding: 20px 40px 0; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 81px; z-index: 99; }
+.tab { padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; font-size: 13px; border: 1px solid var(--border); border-bottom: none; color: var(--muted); background: var(--card); transition: all .2s; }
+.tab.active { color: #fff; background: #23263a; border-color: var(--accent); }
+.tab-content { display: none; padding: 32px 40px; }
+.tab-content.active { display: block; }
+/* ── Filters ── */
+.filters { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; align-items: center; }
+.filters label { font-size: 13px; color: var(--muted); }
+.filter-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; transition: all .2s; }
+.filter-btn.active { color: #fff; border-color: currentColor; }
+.filter-btn.byd.active { color: var(--byd); border-color: var(--byd); background: rgba(6,182,212,.12); }
+.filter-btn.ford.active { color: #6b8fff; border-color: #6b8fff; background: rgba(0,52,118,.2); }
+.filter-btn.toyota.active { color: #ff6b6b; border-color: #ff6b6b; background: rgba(235,10,30,.1); }
+/* ── Timeline ── */
+.timeline { position: relative; padding-left: 60px; }
+.timeline::before { content: ''; position: absolute; left: 24px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--border)); }
+.year-marker { position: relative; margin: 32px 0 8px -60px; padding-left: 60px; }
+.year-marker::before { content: attr(data-year); position: absolute; left: 0; width: 48px; text-align: center; font-size: 11px; font-weight: 700; color: var(--accent); background: var(--bg); padding: 4px 0; border-radius: 4px; }
+.month-block { margin-bottom: 4px; position: relative; }
+.month-header { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 0; user-select: none; }
+.month-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); border: 2px solid var(--muted); position: absolute; left: 20px; flex-shrink: 0; }
+.month-dot.has-event { background: gold; border-color: gold; box-shadow: 0 0 8px rgba(255,215,0,.5); }
+.month-dot.has-model { background: #a78bfa; border-color: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,.5); }
+.month-label { font-size: 12px; color: var(--muted); font-weight: 600; min-width: 60px; }
+.month-pills { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+.pill.byd { background: rgba(6,182,212,.12); color: #67e8f9; border: 1px solid rgba(6,182,212,.35); }
+.pill.ford { background: rgba(0,52,118,.25); color: #7ba4ff; border: 1px solid rgba(107,143,255,.3); }
+.pill.toyota { background: rgba(235,10,30,.15); color: #ffa0a0; border: 1px solid rgba(235,10,30,.3); }
+.pill.event { background: rgba(255,215,0,.15); color: gold; border: 1px solid rgba(255,215,0,.3); }
+.pill.model-hilux { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.3); }
+.pill.model-ranger { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.3); }
+.pill.model-shark { background: rgba(139,92,246,.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,.3); }
+.platform-pill { font-size: 10px; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+.platform-pill.tt { background: rgba(1,1,1,.5); color: #fff; border: 1px solid #444; }
+.platform-pill.ig { background: rgba(193,53,132,.15); color: var(--ig); border: 1px solid rgba(193,53,132,.3); }
+.platform-pill.fb { background: rgba(24,119,242,.15); color: var(--fb); border: 1px solid rgba(24,119,242,.3); }
+/* ── Cards ── */
+.month-cards { display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-top: 10px; padding-bottom: 12px; }
+.month-cards.open { display: grid; }
+.post-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: border-color .2s; }
+.post-card:hover { border-color: var(--accent); }
+.card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.brand-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.brand-dot.byd { background: var(--byd); }
+.brand-dot.ford { background: #4f8ef7; }
+.brand-dot.toyota { background: var(--toyota); }
+.card-text { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.card-stats { display: flex; gap: 12px; font-size: 11px; }
+.stat { color: var(--muted); }
+.stat span { color: var(--text); font-weight: 700; }
+.event-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+/* ── Model Section ── */
+.model-section { margin-bottom: 40px; }
+.model-title { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.model-badge { padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; }
+.badge-hilux { background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.4); }
+.badge-ranger { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
+.badge-shark  { background: rgba(139,92,246,.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,.4); }
+.model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.model-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.model-card .platform { font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+.model-card .date { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.model-card .text { font-size: 12px; color: var(--muted); line-height: 1.4; margin-bottom: 8px; }
+.model-card .nums { display: flex; gap: 10px; font-size: 11px; color: var(--muted); }
+.model-card .nums b { color: var(--text); }
+/* ── Hashtag ── */
+.hashtag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.ht-brand { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.ht-brand h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.ht-brand h3.byd { color: #67e8f9; }
+.ht-brand h3.ford { color: #7ba4ff; }
+.ht-brand h3.toyota { color: #ffa0a0; }
+.platform-section { margin-bottom: 14px; }
+.platform-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-item { font-size: 11px; padding: 3px 9px; border-radius: 12px; cursor: default; }
+.tag-item.tt-tag  { background: rgba(255,255,255,.05); color: #ccc; border: 1px solid #333; }
+.tag-item.ig-tag  { background: rgba(193,53,132,.1); color: #e879c2; border: 1px solid rgba(193,53,132,.25); }
+.tag-item.fb-tag  { background: rgba(24,119,242,.1); color: #60a5fa; border: 1px solid rgba(24,119,242,.25); }
+/* ── Summary Cards ── */
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+.summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.summary-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.metric-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.metric-row:last-child { border-bottom: none; }
+.metric-label { font-size: 12px; color: var(--muted); }
+.metric-value { font-size: 13px; font-weight: 700; }
+/* ── Monthly Table ── */
+.monthly-section { margin-top: 36px; }
+.monthly-section h2 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.monthly-section .section-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.brand-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.brand-tab-btn { padding: 6px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 600; transition: all .2s; }
+.brand-tab-btn.active-byd   { color: #67e8f9; border-color: var(--byd); background: rgba(6,182,212,.12); }
+.brand-tab-btn.active-ford  { color: #7ba4ff; border-color: #4f8ef7; background: rgba(0,52,118,.2); }
+.brand-tab-btn.active-toyota{ color: #ffa0a0; border-color: var(--toyota); background: rgba(235,10,30,.1); }
+.monthly-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table.monthly-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.monthly-table thead th { background: #23263a; color: var(--muted); font-weight: 700; padding: 10px 12px; text-align: left; position: sticky; top: 0; white-space: nowrap; }
+table.monthly-table thead th:first-child { width: 72px; }
+table.monthly-table tbody tr { border-top: 1px solid var(--border); transition: background .15s; }
+table.monthly-table tbody tr:hover { background: rgba(255,255,255,.03); }
+table.monthly-table tbody td { padding: 8px 12px; color: var(--text); white-space: nowrap; }
+table.monthly-table tbody td.ym-cell { color: var(--muted); font-weight: 600; font-size: 11px; }
+table.monthly-table tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.plat-bar { display: flex; gap: 3px; align-items: center; }
+.plat-seg { height: 8px; border-radius: 3px; }
+.bar-tt { background: #555; }
+.bar-ig { background: var(--ig); }
+.bar-fb { background: var(--fb); }
+.plat-legend { display: flex; gap: 12px; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.plat-legend span { display: flex; align-items: center; gap: 4px; }
+.plat-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+/* ── Year-Month Grid ── */
+.ym-grid-wrap { overflow-x: auto; }
+.ym-header-row, .ym-year-row { display: grid; grid-template-columns: 52px repeat(12, minmax(66px,1fr)); gap: 3px; margin-bottom: 3px; }
+.ym-corner { display: block; }
+.ym-month-head { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); padding: 8px 0; }
+.ym-year-label { font-size: 11px; font-weight: 800; color: var(--accent); display: flex; align-items: flex-start; padding-top: 10px; justify-content: center; }
+.ym-cell { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 6px; cursor: pointer; min-height: 52px; position: relative; transition: border-color .15s, transform .12s, box-shadow .12s; display: flex; flex-direction: column; gap: 2px; }
+.ym-cell:hover { border-color: var(--accent); transform: scale(1.08); z-index: 5; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+.ym-cell.empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+.ym-cell.has-event { border-color: rgba(255,215,0,.55); }
+.ym-cell.has-model { border-color: rgba(167,139,250,.55); }
+.ym-cell.has-event.has-model { border-color: rgba(167,139,250,.75); box-shadow: 0 0 8px rgba(255,215,0,.18); }
+.ym-cell.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(79,142,247,.45) !important; }
+.ym-cell.filtered-out { opacity: 0.1; pointer-events: none; border-color: transparent !important; box-shadow: none !important; }
+.cell-brands { display: flex; gap: 3px; flex-wrap: wrap; }
+.cell-brand-dot { width: 7px; height: 7px; border-radius: 50%; transition: opacity .2s; }
+.cell-count { font-size: 10px; color: var(--muted); font-weight: 600; }
+.cell-icons { font-size: 9px; align-self: flex-end; margin-top: auto; line-height: 1; }
+/* ── Detail Panel ── */
+.detail-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 440px; background: #13162a; border-left: 1px solid var(--border); transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); z-index: 300; box-shadow: -12px 0 40px rgba(0,0,0,.65); }
+.detail-panel.open { transform: translateX(0); }
+.detail-scroll { height: 100%; overflow-y: auto; padding: 16px 18px 60px; }
+.detail-close { display: block; margin-left: auto; margin-bottom: 10px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 13px; line-height: 28px; text-align: center; position: sticky; top: 0; z-index: 10; }
+.detail-close:hover { color: #fff; border-color: #fff; }
+.detail-kpi { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 14px; }
+.detail-kpi-card { background: rgba(79,142,247,.08); border: 1px solid rgba(79,142,247,.18); border-radius: 8px; padding: 10px 12px; text-align: center; }
+.detail-kpi-val { font-size: 20px; font-weight: 800; color: var(--accent); }
+.detail-kpi-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.detail-section { margin-bottom: 16px; }
+.detail-section-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+.detail-event-item { background: rgba(255,215,0,.05); border: 1px solid rgba(255,215,0,.15); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.ev-title { font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+.ev-desc { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.ev-snippet { font-size: 11px; color: #aaa; padding: 4px 0 4px 10px; border-left: 2px solid rgba(255,215,0,.3); line-height: 1.4; margin-bottom: 4px; }
+.detail-post-card { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+.dp-header { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
+.dp-text { font-size: 11px; color: var(--muted); line-height: 1.4; margin-bottom: 5px; }
+.dp-stats { font-size: 11px; color: var(--text); }
+/* ── Model Page ── */
+.model-subtabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.model-subtab { padding: 8px 20px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 13px; background: var(--card); color: var(--muted); transition: all .2s; }
+.model-subtab.active-hilux  { color: #34d399; border-color: rgba(16,185,129,.5); background: rgba(16,185,129,.08); }
+.model-subtab.active-ranger { color: #fbbf24; border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.08); }
+.model-subtab.active-shark  { color: #c4b5fd; border-color: rgba(139,92,246,.5); background: rgba(139,92,246,.08); }
+.model-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.model-kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+.model-kpi .mkv { font-size: 22px; font-weight: 800; }
+.model-kpi .mkl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.model-mini-grid .ym-header-row, .model-mini-grid .ym-year-row { grid-template-columns: 48px repeat(12, minmax(44px,1fr)); gap: 2px; margin-bottom: 2px; }
+.model-mini-grid .ym-cell { min-height: 34px; padding: 3px 4px; }
+.model-posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 12px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>三品牌社媒时间轴分析</h1>
+    <div class="sub">BYD · Ford · Toyota &nbsp;|&nbsp; TikTok · Instagram · Facebook &nbsp;|&nbsp; 2009–2026</div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('timeline')">📅 时间轴</div>
+  <div class="tab" onclick="switchTab('models')">🚗 车型追踪</div>
+  <div class="tab" onclick="switchTab('hashtags')">🏷 Hashtag</div>
+  <div class="tab" onclick="switchTab('summary')">📊 数据总览</div>
+</div>
+
+<!-- ── TAB: Timeline ── -->
+<div id="tab-timeline" class="tab-content active">
+  <div class="filters">
+    <label>品牌高亮：</label>
+    <button class="filter-btn byd active" onclick="toggleGridBrand('byd',this)">BYD</button>
+    <button class="filter-btn ford active" onclick="toggleGridBrand('ford',this)">Ford</button>
+    <button class="filter-btn toyota active" onclick="toggleGridBrand('toyota',this)">Toyota</button>
+    <span style="margin-left:16px;color:var(--muted);font-size:12px">·  点击格子查看月度详情报告</span>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div style="width:12px;height:12px;border-radius:2px;border:1.5px solid rgba(255,215,0,.8)"></div>有大事件</div>
+    <div class="legend-item"><div style="width:12px;height:12px;border-radius:2px;border:1.5px solid rgba(167,139,250,.8)"></div>车型提及</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--byd)"></div>BYD</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div>Ford</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--toyota)"></div>Toyota</div>
+    <div class="legend-item" style="margin-left:8px"><div class="legend-dot" style="background:#34d399"></div>Hilux</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Ranger</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>Shark</div>
+  </div>
+  <div class="ym-grid-wrap"><div id="ym-grid"></div></div>
+</div>
+
+<!-- ── Detail Panel (fixed overlay) ── -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-scroll">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ── TAB: Models ── -->
+<div id="tab-models" class="tab-content">
+  <div class="model-subtabs">
+    <button class="model-subtab active-hilux" onclick="switchModelTab('Hilux',this)">📍 Toyota Hilux</button>
+    <button class="model-subtab" onclick="switchModelTab('Ranger',this)">📍 Ford Ranger</button>
+    <button class="model-subtab" onclick="switchModelTab('Shark',this)">🦈 BYD Shark</button>
+  </div>
+  <div id="model-content"></div>
+</div>
+
+<!-- ── TAB: Hashtags ── -->
+<div id="tab-hashtags" class="tab-content">
+  <div class="hashtag-grid" id="hashtag-container"></div>
+</div>
+
+<!-- ── TAB: Summary ── -->
+<div id="tab-summary" class="tab-content">
+  <div class="summary-grid" id="summary-container"></div>
+  <div class="monthly-section">
+    <h2>月度维度统计</h2>
+    <div class="section-sub">按品牌查看各月内容数量、平台分布及平均互动数据（跨 TikTok / Instagram / Facebook 汇总）</div>
+    <div class="brand-tabs">
+      <button class="brand-tab-btn active-byd" onclick="switchMonthBrand('BYD',this)">BYD</button>
+      <button class="brand-tab-btn" onclick="switchMonthBrand('Ford',this)">Ford</button>
+      <button class="brand-tab-btn" onclick="switchMonthBrand('Toyota',this)">Toyota</button>
+    </div>
+    <div class="plat-legend">
+      <span><i style="background:#555"></i>TikTok</span>
+      <span><i style="background:var(--ig)"></i>Instagram</span>
+      <span><i style="background:var(--fb)"></i>Facebook</span>
+    </div>
+    <div class="monthly-table-wrap">
+      <table class="monthly-table" id="monthly-table">
+        <thead>
+          <tr>
+            <th>月份</th>
+            <th class="num">总帖数</th>
+            <th>平台分布</th>
+            <th class="num">TikTok帖</th>
+            <th class="num">IG帖</th>
+            <th class="num">FB帖</th>
+            <th class="num">均值点赞/反应</th>
+            <th class="num">均值播放（TT）</th>
+            <th class="num">均值评论</th>
+          </tr>
+        </thead>
+        <tbody id="monthly-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Load Data ──
+fetch('timeline_data.json').then(r=>r.json()).then(data=>{
+  buildTimeline(data);
+  buildModels(data);
+  buildHashtags(data);
+  buildSummary(data);
+});
+
+// ── Tab Switch ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>{ t.classList.toggle('active', ['timeline','models','hashtags','summary'][i]===name); });
+  document.querySelectorAll('.tab-content').forEach(c=>{ c.classList.toggle('active', c.id==='tab-'+name); });
+}
+
+// ── Constants ──
+const EVENT_LABELS = { auto_show:'🏟 车展', launch:'🚀 发布', earnings:'📈 财报/销量', event:'🎪 活动', award:'🏆 奖项', collaboration:'🤝 合作', esports_gaming:'🎮 电竞', racing:'🏎 赛事', ev_tech:'⚡ 电动' };
+const MODEL_CLASS  = { Hilux:'model-hilux', Ranger:'model-ranger', Shark:'model-shark' };
+const BRAND_COLOR  = { BYD:'#67e8f9', Ford:'#7ba4ff', Toyota:'#ffa0a0' };
+const BRAND_DOT_COLOR = { BYD:'#06B6D4', Ford:'#4f8ef7', Toyota:'#EB0A1E' };
+const MONTHS_CN = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MONTHS_CN_FULL = ['','一','二','三','四','五','六','七','八','九','十','十一','十二'];
+
+function fmtNum(n){ if(!n||isNaN(n)||n===0) return '0'; if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(0)+'K'; return String(n); }
+
+// ── Grid Brand Filter ──
+const gridBrands = new Set(['byd','ford','toyota']);
+function toggleGridBrand(brand, btn) {
+  if(gridBrands.has(brand)) { gridBrands.delete(brand); btn.classList.remove('active'); }
+  else { gridBrands.add(brand); btn.classList.add('active'); }
+  applyGridFilter();
+}
+function applyGridFilter() {
+  const allSelected = gridBrands.size === 3;
+  document.querySelectorAll('#ym-grid .ym-cell:not(.empty)').forEach(cell => {
+    const ym = cell.dataset.ym;
+    if (!ym || !_monthly[ym]) return;
+    const m = _monthly[ym];
+    const cellBrands = Object.keys(m.brands).map(b => b.toLowerCase());
+    const hasMatch = cellBrands.some(b => gridBrands.has(b));
+    cell.classList.toggle('filtered-out', !hasMatch);
+    // 品牌圆点高亮
+    cell.querySelectorAll('.cell-brand-dot').forEach(dot => {
+      dot.style.opacity = gridBrands.has(dot.dataset.brand) ? '1' : '0.08';
+    });
+    // 更新帖数：只计算选中品牌
+    const countEl = cell.querySelector('.cell-count');
+    if (countEl) {
+      const n = allSelected
+        ? m.totalPosts
+        : Object.entries(m.brands).filter(([b]) => gridBrands.has(b.toLowerCase())).reduce((s,[,v])=>s+v.posts,0);
+      countEl.textContent = n + '帖';
+    }
+  });
+}
+
+// ── Build Year×Month Grid ──
+let _monthly = {};
+function buildTimeline(data) {
+  const addEntry = (timeline, plat) => {
+    timeline.forEach(e => {
+      if (!_monthly[e.ym]) _monthly[e.ym] = { brands:{}, events:[], models:[], plats:{tt:0,ig:0,fb:0}, totalPosts:0, totalLike:0, totalPlay:0, totalComment:0, entries:[] };
+      const m = _monthly[e.ym];
+      if (!m.brands[e.brand]) m.brands[e.brand] = {posts:0,like:0,play:0,comment:0};
+      m.brands[e.brand].posts   += e.posts;
+      m.brands[e.brand].like    += e.total_like||0;
+      m.brands[e.brand].play    += e.total_play||0;
+      m.brands[e.brand].comment += e.total_comment||0;
+      m.plats[plat]    += e.posts;
+      m.totalPosts     += e.posts;
+      m.totalLike      += e.total_like||0;
+      m.totalPlay      += e.total_play||0;
+      m.totalComment   += e.total_comment||0;
+      m.events = [...new Set([...m.events, ...(e.events||[])])];
+      m.models = [...new Set([...m.models, ...(e.models||[])])];
+      m.entries.push({...e, plat});
+    });
+  };
+  addEntry(data.tiktok_timeline, 'tt');
+  addEntry(data.instagram_timeline, 'ig');
+  addEntry(data.facebook_timeline, 'fb');
+
+  const allYears = [...new Set(Object.keys(_monthly).map(k=>k.split('-')[0]))].sort();
+  const grid = document.getElementById('ym-grid');
+  let html = '<div class="ym-header-row"><div class="ym-corner"></div>';
+  MONTHS_CN.forEach(m => { html += `<div class="ym-month-head">${m}</div>`; });
+  html += '</div>';
+
+  allYears.forEach(year => {
+    html += `<div class="ym-year-row"><div class="ym-year-label">${year}</div>`;
+    for (let mo = 1; mo <= 12; mo++) {
+      const ym = `${year}-${String(mo).padStart(2,'0')}`;
+      const m = _monthly[ym];
+      if (!m) { html += '<div class="ym-cell empty"></div>'; continue; }
+      const hasEvent = m.events.length > 0, hasModel = m.models.length > 0;
+      const cls = 'ym-cell' + (hasEvent && hasModel ? ' has-event has-model' : hasEvent ? ' has-event' : hasModel ? ' has-model' : '');
+      const alpha = Math.min(0.32, m.totalPosts / 90).toFixed(2);
+      const dots = Object.keys(m.brands).map(b =>
+        `<div class="cell-brand-dot" data-brand="${b.toLowerCase()}" style="background:${BRAND_DOT_COLOR[b]||'#aaa'}" title="${b}: ${m.brands[b].posts}帖"></div>`).join('');
+      const icons = (hasEvent ? '<span title="大事件">★</span>' : '') + (hasModel ? `<span title="${m.models.join(',')}">🚗</span>` : '');
+      html += `<div class="${cls}" data-ym="${ym}" data-brands="${Object.keys(m.brands).map(b=>b.toLowerCase()).join(',')}" onclick="openDetailPanel('${ym}')" style="background:rgba(79,142,247,${alpha})">
+        <div class="cell-brands">${dots}</div>
+        <div class="cell-count">${m.totalPosts}帖</div>
+        <div class="cell-icons">${icons}</div>
+      </div>`;
+    }
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+}
+
+// ── Models Tab ──
+let _modelData = {};
+function buildModels(data) { _modelData = data.model_posts; renderModelPage('Hilux'); }
+
+function switchModelTab(model, btn) {
+  document.querySelectorAll('.model-subtab').forEach(b => { b.className = 'model-subtab'; });
+  btn.classList.add(model==='Hilux'?'active-hilux':model==='Ranger'?'active-ranger':'active-shark');
+  renderModelPage(model);
+}
+
+function renderModelPage(model) {
+  const posts = _modelData[model] || {tiktok:[],instagram:[],facebook:[]};
+  const brandFor = {Hilux:'Toyota',Ranger:'Ford',Shark:'BYD'};
+  const colorFor = {Hilux:'#ffa0a0',Ranger:'#7ba4ff',Shark:'#67e8f9'};
+  const color = colorFor[model];
+  const allPosts = [
+    ...posts.tiktok.map(p=>({...p,plat:'tt',eng:p.play||0})),
+    ...posts.instagram.map(p=>({...p,plat:'ig',eng:p.like||0})),
+    ...posts.facebook.map(p=>({...p,plat:'fb',eng:p.reactions||0})),
+  ].sort((a,b)=>a.date.localeCompare(b.date));
+
+  const totalAll = allPosts.length;
+  const totalTT = posts.tiktok.length, totalIG = posts.instagram.length, totalFB = posts.facebook.length;
+  const bestPost = [...allPosts].sort((a,b)=>b.eng-a.eng)[0];
+  const bestEng = bestPost ? bestPost.eng : 0;
+
+  // Mini year-month grid
+  const modelMonths = {};
+  allPosts.forEach(p => { const ym=p.date.slice(0,7); if(!modelMonths[ym])modelMonths[ym]=[]; modelMonths[ym].push(p); });
+  const years = [...new Set(Object.keys(modelMonths).map(k=>k.split('-')[0]))].sort();
+  let miniGrid = '<div class="ym-grid-wrap model-mini-grid"><div>';
+  miniGrid += '<div class="ym-header-row"><div class="ym-corner"></div>';
+  MONTHS_CN.forEach(m => { miniGrid += `<div class="ym-month-head">${m}</div>`; });
+  miniGrid += '</div>';
+  years.forEach(year => {
+    miniGrid += `<div class="ym-year-row"><div class="ym-year-label">${year}</div>`;
+    for(let mo=1;mo<=12;mo++){
+      const ym=`${year}-${String(mo).padStart(2,'0')}`;
+      const ps=modelMonths[ym];
+      if(!ps){miniGrid+='<div class="ym-cell empty"></div>';continue;}
+      const topEng=Math.max(...ps.map(p=>p.eng));
+      miniGrid+=`<div class="ym-cell has-model" title="${ym}: ${ps.length}条" style="background:rgba(139,92,246,.15);cursor:default">
+        <div class="cell-count" style="color:${color}">${ps.length}</div>
+        <div style="font-size:9px;color:var(--muted)">${fmtNum(topEng)}</div>
+      </div>`;
+    }
+    miniGrid+='</div>';
+  });
+  miniGrid+='</div></div>';
+
+  // Post cards sorted by engagement
+  const cardsHTML = [...allPosts].sort((a,b)=>b.eng-a.eng).map(p => {
+    const pl=p.plat==='tt'?'TikTok':p.plat==='ig'?'Instagram':'Facebook';
+    const metric=p.plat==='tt'?`▶ <b>${fmtNum(p.play)}</b> 播放 &nbsp; ♥ <b>${fmtNum(p.like)}</b> 赞`:p.plat==='ig'?`♥ <b>${fmtNum(p.like)}</b> 点赞`:`❤ <b>${fmtNum(p.reactions)}</b> 反应`;
+    return `<div class="post-card"><div class="card-header"><div class="brand-dot ${p.brand.toLowerCase()}"></div><span class="platform-pill ${p.plat}">${pl}</span><span style="color:${BRAND_COLOR[p.brand]||'#aaa'};font-size:11px;font-weight:700">${p.brand}</span><span style="font-size:11px;color:var(--muted);margin-left:auto">${p.date}</span></div><div class="card-text">${p.text}</div><div class="card-stats"><div class="stat">${metric}</div></div></div>`;
+  }).join('');
+
+  document.getElementById('model-content').innerHTML = `
+    <div class="model-kpi-grid">
+      <div class="model-kpi"><div class="mkv" style="color:${color}">${totalAll}</div><div class="mkl">总提及帖数</div></div>
+      <div class="model-kpi"><div class="mkv" style="color:#aaa">${totalTT}</div><div class="mkl">TikTok</div></div>
+      <div class="model-kpi"><div class="mkv" style="color:var(--ig)">${totalIG}</div><div class="mkl">Instagram</div></div>
+      <div class="model-kpi"><div class="mkv" style="color:var(--fb)">${totalFB}</div><div class="mkl">Facebook</div></div>
+    </div>
+    <div style="margin-bottom:24px"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:10px">📅 提及时间轴（年 × 月）</div>${miniGrid}</div>
+    <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px">📊 相关帖子（按互动排序）· 最高互动 ${fmtNum(bestEng)}</div>
+    <div class="model-posts-grid">${cardsHTML||'<div style="color:var(--muted)">暂无数据</div>'}</div>`;
+}
+
+// ── Detail Panel ──
+const EVENT_DETAIL_CN = {
+  auto_show:     {icon:'🏟',label:'车展 / 汽车展览',    desc:'品牌参与国际或地区汽车展览活动'},
+  launch:        {icon:'🚀',label:'新车发布 / 产品上市', desc:'新车型首发、亮相或正式上市'},
+  earnings:      {icon:'📈',label:'销量播报 / 财务数据', desc:'月度/年度销量里程碑或财报数据披露'},
+  event:         {icon:'🎪',label:'品牌活动 / 线下活动', desc:'品牌赞助、展览或线下体验活动'},
+  award:         {icon:'🏆',label:'荣誉奖项',           desc:'品牌或车型获得行业认可与奖项'},
+  collaboration: {icon:'🤝',label:'品牌合作 / 联名',    desc:'与其他品牌、机构或名人的合作内容'},
+  esports_gaming:{icon:'🎮',label:'电竞 / 游戏营销',   desc:'品牌赞助或参与电竞、游戏相关内容'},
+  racing:        {icon:'🏎',label:'赛事 / 赛车运动',    desc:'参与或赞助赛车、拉力赛等竞技赛事'},
+  ev_tech:       {icon:'⚡',label:'新能源 / 电动技术',  desc:'电动车技术、充电、续航等相关内容'},
+};
+
+function openDetailPanel(ym) {
+  const m = _monthly[ym]; if(!m) return;
+  const [year,mo] = ym.split('-');
+  const avgLike = m.totalPosts ? Math.round(m.totalLike/m.totalPosts) : 0;
+  const brandRows = Object.entries(m.brands).map(([b,s])=>{
+    const plats=['tt','ig','fb'].map(pl=>{const cnt=m.entries.filter(e=>e.brand===b&&e.plat===pl).reduce((a,e)=>a+e.posts,0);return cnt?`<span class="platform-pill ${pl}">${pl==='tt'?'TK':pl==='ig'?'IG':'FB'}</span>&nbsp;${cnt}帖`:null;}).filter(Boolean).join(' ');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:${BRAND_COLOR[b]};font-weight:700;font-size:12px">${b}</span><span style="font-size:11px;color:var(--muted)">${plats}</span><span style="font-size:12px;font-weight:700">${fmtNum(s.like)} 赞</span></div>`;
+  }).join('');
+  const evHTML = m.events.map(ev=>{
+    const info=EVENT_DETAIL_CN[ev]||{icon:'📌',label:ev,desc:''};
+    const snips=m.entries.filter(e=>(e.events||[]).includes(ev)).slice(0,2).map(e=>`<div class="ev-snippet">${e.top_text.slice(0,90)}</div>`).join('');
+    return `<div class="detail-event-item"><div class="ev-title">${info.icon} ${info.label}</div><div class="ev-desc">${info.desc}</div>${snips}</div>`;
+  }).join('');
+  const modHTML = m.models.map(model=>{
+    const ps=m.entries.filter(e=>(e.models||[]).includes(model));
+    const top=[...ps].sort((a,b)=>(b.top_like||0)-(a.top_like||0))[0];
+    return `<div style="margin-bottom:10px;padding:10px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:8px"><span class="pill ${MODEL_CLASS[model]||''}">${model}</span><span style="font-size:11px;color:var(--muted);margin-left:8px">${ps.length}条相关帖</span>${top?`<div style="font-size:11px;color:#aaa;margin-top:6px;line-height:1.4">${top.top_text.slice(0,100)}</div>`:''}</div>`;
+  }).join('');
+  const topPostsHTML=[...m.entries].sort((a,b)=>(b.top_like||0)-(a.top_like||0)).slice(0,5).map(e=>{
+    const pl=e.plat==='tt'?'TikTok':e.plat==='ig'?'Instagram':'Facebook';
+    const metric=e.plat==='tt'?`▶ ${fmtNum(e.top_play)} 播放 &nbsp;♥ ${fmtNum(e.top_like)} 赞`:`♥ ${fmtNum(e.top_like)} 赞`;
+    return `<div class="detail-post-card"><div class="dp-header"><span class="platform-pill ${e.plat}">${pl}</span><span style="color:${BRAND_COLOR[e.brand]};font-size:11px;font-weight:700">${e.brand}</span></div><div class="dp-text">${e.top_text.slice(0,120)}</div><div class="dp-stats">${metric}</div></div>`;
+  }).join('');
+
+  document.getElementById('detail-content').innerHTML = `
+    <div style="margin-bottom:12px"><div style="font-size:22px;font-weight:800;color:#fff">${year}年${MONTHS_CN_FULL[+mo]}月</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${ym} · 月度内容报告</div></div>
+    <div class="detail-kpi"><div class="detail-kpi-card"><div class="detail-kpi-val">${m.totalPosts}</div><div class="detail-kpi-label">总发帖量</div></div><div class="detail-kpi-card"><div class="detail-kpi-val">${fmtNum(avgLike)}</div><div class="detail-kpi-label">均值互动</div></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px">TikTok ${m.plats.tt} &nbsp;·&nbsp; Instagram ${m.plats.ig} &nbsp;·&nbsp; Facebook ${m.plats.fb}</div>
+    <div class="detail-section"><div class="detail-section-title">品牌分布</div>${brandRows}</div>
+    ${m.events.length?`<div class="detail-section"><div class="detail-section-title">📅 重要事件</div>${evHTML}</div>`:''}
+    ${m.models.length?`<div class="detail-section"><div class="detail-section-title">🚗 车型动态</div>${modHTML}</div>`:''}
+    <div class="detail-section"><div class="detail-section-title">📊 本月热门帖子</div>${topPostsHTML}</div>`;
+
+  document.querySelectorAll('.ym-cell.selected').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`.ym-cell[onclick="openDetailPanel('${ym}')"]`)?.classList.add('selected');
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.querySelectorAll('.ym-cell.selected').forEach(c=>c.classList.remove('selected'));
+}
+
+// ── Hashtags ──
+function buildHashtags(data) {
+  const container = document.getElementById('hashtag-container');
+  ['BYD','Ford','Toyota'].forEach(brand => {
+    const bc = brand.toLowerCase();
+    const ht = data.hashtags[brand];
+    const platHTML = (tags, cls, label) => {
+      if(!tags||!tags.length) return '';
+      const items = tags.slice(0,20).map(t => {
+        const size = Math.max(11, Math.min(16, 11 + Math.log(t.count+1)));
+        return `<span class="tag-item ${cls}" style="font-size:${size.toFixed(0)}px" title="${t.count}次">#${t.tag} <sup style="font-size:9px">${fmtNum(t.count)}</sup></span>`;
+      }).join('');
+      return `<div class="platform-section"><div class="platform-label">${label}</div><div class="tag-cloud">${items}</div></div>`;
+    };
+    const div = document.createElement('div');
+    div.className = 'ht-brand';
+    div.innerHTML = `<h3 class="${bc}">${brand}</h3>${platHTML(ht.tiktok,'tt-tag','TikTok')}${platHTML(ht.instagram,'ig-tag','Instagram')}${platHTML(ht.facebook,'fb-tag','Facebook')}`;
+    container.appendChild(div);
+  });
+}
+
+// ── Summary ──
+let monthlyDataByBrand = {};
+
+function buildSummary(data) {
+  const container = document.getElementById('summary-container');
+  const brands = ['BYD','Ford','Toyota'];
+  const summaries = {
+    BYD: [
+      ['TikTok 帖子数','276'],['TikTok 粉丝','533K'],['TikTok 均值播放','263K'],
+      ['TikTok 互动率','7.09%'],['IG 帖子数','1,525'],['IG 均值点赞','2,706'],
+      ['FB 帖子数','1,733'],['FB 均值反应','1,470'],['FB Angry 比率','0.09%'],
+    ],
+    Ford: [
+      ['TikTok 帖子数','501'],['TikTok 粉丝','817K'],['TikTok 均值播放','271K'],
+      ['TikTok 互动率','5.05%'],['IG 帖子数','795'],['IG 均值点赞','19,025'],
+      ['FB 帖子数','383'],['FB 均值反应','653'],['FB Angry 比率','2.18%'],
+    ],
+    Toyota: [
+      ['TikTok 帖子数','136'],['TikTok 粉丝','4.8M'],['TikTok 均值播放','874K'],
+      ['TikTok 互动率','4.56%'],['IG 帖子数','5,616'],['IG 均值点赞','6,517'],
+      ['FB 帖子数','6,095'],['FB 均值反应','1,117'],['FB Angry 比率','0.07%'],
+    ],
+  };
+  brands.forEach(brand => {
+    const div = document.createElement('div');
+    div.className = 'summary-card';
+    const rows = summaries[brand].map(([l,v])=>`<div class="metric-row"><span class="metric-label">${l}</span><span class="metric-value" style="color:${BRAND_COLOR[brand]}">${v}</span></div>`).join('');
+    div.innerHTML = `<h3 style="color:${BRAND_COLOR[brand]}">${brand}</h3>${rows}`;
+    container.appendChild(div);
+  });
+
+  // ── 构建月度数据 ──
+  // 按 ym+brand 聚合三平台
+  const byKey = {}; // key = ym|brand
+  const addPlat = (timeline, plat) => {
+    timeline.forEach(e => {
+      const k = `${e.ym}|${e.brand}`;
+      if (!byKey[k]) byKey[k] = { ym: e.ym, brand: e.brand, tt:{posts:0,like:0,play:0,comment:0}, ig:{posts:0,like:0,comment:0}, fb:{posts:0,like:0,comment:0} };
+      const obj = byKey[k];
+      if (plat === 'tt') { obj.tt.posts += e.posts; obj.tt.like += e.total_like||0; obj.tt.play += e.total_play||0; obj.tt.comment += e.total_comment||0; }
+      if (plat === 'ig') { obj.ig.posts += e.posts; obj.ig.like += e.total_like||0; obj.ig.comment += e.total_comment||0; }
+      if (plat === 'fb') { obj.fb.posts += e.posts; obj.fb.like += e.total_like||0; obj.fb.comment += e.total_comment||0; }
+    });
+  };
+  addPlat(data.tiktok_timeline,    'tt');
+  addPlat(data.instagram_timeline, 'ig');
+  addPlat(data.facebook_timeline,  'fb');
+
+  brands.forEach(brand => {
+    monthlyDataByBrand[brand] = Object.values(byKey)
+      .filter(e => e.brand === brand)
+      .sort((a,b) => a.ym.localeCompare(b.ym));
+  });
+
+  renderMonthlyTable('BYD');
+}
+
+function switchMonthBrand(brand, btn) {
+  document.querySelectorAll('.brand-tab-btn').forEach(b => {
+    b.className = 'brand-tab-btn';
+  });
+  const cls = brand === 'BYD' ? 'active-byd' : brand === 'Ford' ? 'active-ford' : 'active-toyota';
+  btn.classList.add(cls);
+  renderMonthlyTable(brand);
+}
+
+function renderMonthlyTable(brand) {
+  const rows = monthlyDataByBrand[brand] || [];
+  const color = BRAND_COLOR[brand];
+  const tbody = document.getElementById('monthly-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">暂无数据</td></tr>'; return; }
+
+  // 找最大帖数用于比例条
+  const maxPosts = Math.max(...rows.map(r => r.tt.posts + r.ig.posts + r.fb.posts));
+
+  tbody.innerHTML = rows.map(r => {
+    const total = r.tt.posts + r.ig.posts + r.fb.posts;
+    const ttPct = total ? (r.tt.posts/total*100).toFixed(0) : 0;
+    const igPct = total ? (r.ig.posts/total*100).toFixed(0) : 0;
+    const fbPct = total ? Math.max(0, 100 - +ttPct - +igPct) : 0;
+    const barW  = total ? Math.round(total/maxPosts*120) : 0;
+
+    // avg like/play/comment
+    const totalLike    = r.tt.like + r.ig.like + r.fb.like;
+    const totalComment = r.tt.comment + r.ig.comment + r.fb.comment;
+    const avgLike      = total ? Math.round(totalLike / total) : 0;
+    const avgPlay      = r.tt.posts ? Math.round(r.tt.play / r.tt.posts) : 0;
+    const avgComment   = total ? Math.round(totalComment / total) : 0;
+
+    const platBar = `<div class="plat-bar" style="width:${barW}px;min-width:4px">
+      ${+ttPct>0?`<div class="plat-seg bar-tt" style="width:${ttPct}%;min-width:${r.tt.posts?2:0}px" title="TikTok ${r.tt.posts}帖"></div>`:''}
+      ${+igPct>0?`<div class="plat-seg bar-ig" style="width:${igPct}%;min-width:${r.ig.posts?2:0}px" title="Instagram ${r.ig.posts}帖"></div>`:''}
+      ${+fbPct>0?`<div class="plat-seg bar-fb" style="width:${fbPct}%;min-width:${r.fb.posts?2:0}px" title="Facebook ${r.fb.posts}帖"></div>`:''}
+    </div>`;
+
+    return `<tr>
+      <td class="ym-cell">${r.ym}</td>
+      <td class="num" style="color:${color};font-weight:700">${total}</td>
+      <td>${platBar}</td>
+      <td class="num">${r.tt.posts||'—'}</td>
+      <td class="num">${r.ig.posts||'—'}</td>
+      <td class="num">${r.fb.posts||'—'}</td>
+      <td class="num">${fmtNum(avgLike)}</td>
+      <td class="num">${r.tt.posts ? fmtNum(avgPlay) : '—'}</td>
+      <td class="num">${avgComment > 0 ? fmtNum(avgComment) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
