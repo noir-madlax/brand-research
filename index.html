@@ -3,925 +3,1397 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>品牌社媒内容管理平台</title>
+<title>品牌社媒内容研究平台</title>
 <style>
+/* ── Design Tokens (Light Report Style) ── */
 :root {
-  --byd: #06B6D4; --ford: #003476; --toyota: #EB0A1E;
-  --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a;
-  --text: #e8e9f0; --muted: #7b7f8e; --accent: #4f8ef7;
+  --bg:         #f5f7fa;
+  --surface:    #ffffff;
+  --card:       #ffffff;
+  --card-alt:   #f8fafc;
+  --border:     #e5e9ef;
+  --border-hi:  rgba(37,99,235,.3);
+
+  --text:       #111827;
+  --text-sub:   #6b7280;
+  --text-dim:   #9ca3af;
+
+  --blue:       #2563eb;
+  --blue-light: #3b82f6;
+  --blue-dim:   rgba(37,99,235,.06);
+  --blue-mid:   rgba(37,99,235,.15);
+
+  --byd:        #0891b2;
+  --byd-dim:    rgba(8,145,178,.08);
+  --ford:       #2563eb;
+  --ford-dim:   rgba(37,99,235,.08);
+  --toyota:     #dc2626;
+  --toyota-dim: rgba(220,38,38,.08);
+
+  --radius:     6px;
+  --radius-lg:  10px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', 'PingFang SC', system-ui; font-size: 14px; }
 
-.header { background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%); border-bottom: 1px solid var(--border); padding: 24px 40px; }
-.header h1 { font-size: 24px; font-weight: 700; }
-.header .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.container { max-width: 1400px; margin: 0 auto; padding: 32px 40px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'PingFang SC', 'SF Pro Display', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
 
-/* ── Section: Filters ── */
-.filter-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 28px; }
-.filter-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: #fff; }
-.filter-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 14px; }
-.filter-group:last-child { margin-bottom: 0; }
-.filter-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: block; }
-.filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 600; transition: all .2s; }
-.filter-btn.active { background: rgba(79,142,247,.15); border-color: var(--accent); color: var(--accent); }
-.filter-btn.active.byd { background: rgba(6,182,212,.15); border-color: var(--byd); color: var(--byd); }
-.filter-btn.active.ford { background: rgba(0,52,118,.2); border-color: #4f8ef7; color: #4f8ef7; }
-.filter-btn.active.toyota { background: rgba(235,10,30,.12); border-color: var(--toyota); color: var(--toyota); }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-.date-inputs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.date-inputs input { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 6px; background: rgba(79,142,247,.08); color: #fff; font-size: 12px; }
-.date-inputs button { padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 6px; background: rgba(79,142,247,.1); color: #fff; font-size: 12px; cursor: pointer; transition: all .2s; }
-.date-inputs button:hover { background: rgba(79,142,247,.2); }
+/* ── Header ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 24px; height: 50px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 700; letter-spacing: -.3px;
+  color: var(--text); text-decoration: none; flex-shrink: 0;
+}
+.topbar-logo .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--blue);
+}
+.topbar-divider { width: 1px; height: 18px; background: var(--border); }
+.topbar-sub { font-size: 12px; color: var(--text-sub); flex: 1; }
+.topbar-badges { display: flex; gap: 5px; align-items: center; }
+.brand-badge {
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: .2px;
+}
+.brand-badge.byd    { background: var(--byd-dim);    color: var(--byd);    border: 1px solid rgba(8,145,178,.2); }
+.brand-badge.ford   { background: var(--ford-dim);   color: var(--ford);   border: 1px solid rgba(37,99,235,.2); }
+.brand-badge.toyota { background: var(--toyota-dim); color: var(--toyota); border: 1px solid rgba(220,38,38,.2); }
 
-/* ── Section: Platform Stats ── */
-.stats-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
-.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all .2s; }
-.stat-card.active { border-color: var(--accent); background: rgba(79,142,247,.1); }
-.stat-card h4 { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
-.stat-card .count { font-size: 28px; font-weight: 800; color: var(--accent); }
+/* ── Layout ── */
+.app-layout { display: flex; min-height: calc(100vh - 50px); }
 
-/* ── Section: Timeline Grid ── */
-.timeline-grid { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 28px; overflow-x: auto; display: none; }
-.timeline-grid.active { display: block; }
-.timeline-grid h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
-.timeline-grid table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.timeline-grid th { background: rgba(79,142,247,.1); padding: 8px; text-align: center; border: 1px solid var(--border); font-weight: 600; }
-.timeline-grid td { padding: 8px; border: 1px solid var(--border); text-align: center; background: rgba(0,0,0,.2); }
-.timeline-grid td.has-data { background: rgba(79,142,247,.08); border-color: rgba(79,142,247,.3); cursor: pointer; transition: all .2s; }
-.timeline-grid td.has-data:hover { background: rgba(79,142,247,.15); border-color: rgba(79,142,247,.5); }
+/* ── Sidebar ── */
+.sidebar {
+  width: 320px; flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  padding: 18px 0 24px;
+  position: sticky; top: 50px; height: calc(100vh - 50px); overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 20px; }
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  color: var(--text-dim); text-transform: uppercase;
+  padding: 0 14px; margin-bottom: 4px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  font-size: 12.5px; color: var(--text-sub);
+  cursor: pointer; transition: all .15s;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.sidebar-item:hover { color: var(--text); background: var(--bg); }
+.sidebar-item.active {
+  color: var(--blue); background: var(--blue-dim);
+  border-left-color: var(--blue);
+}
+.sidebar-item .icon { width: 14px; height: 14px; flex-shrink: 0; opacity: .65; }
+.sidebar-sep { height: 1px; background: var(--border); margin: 6px 14px; }
 
-/* ── Section: Content List ── */
-.content-section { margin-bottom: 28px; }
-.content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-.sort-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-.sort-btn { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; transition: all .2s; }
-.sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* ── Main content ── */
+.main { flex: 1; min-width: 0; padding: 20px 24px; }
 
-.content-list { display: grid; gap: 12px; }
-.content-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: all .2s; }
-.content-card:hover { border-color: var(--accent); background: rgba(79,142,247,.05); }
-.card-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; font-size: 11px; }
-.card-badge { padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
-.badge-tt { background: #333; color: #ccc; }
-.badge-ig { background: rgba(193,53,132,.15); color: #e879c2; }
-.badge-fb { background: rgba(24,119,242,.15); color: #60a5fa; }
-.card-text { color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
-.card-stats { display: flex; gap: 14px; font-size: 11px; color: var(--muted); }
-.card-stats span { font-weight: 600; color: var(--text); }
+/* ── Filter bar ── */
+.filter-bar {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.filter-bar-row {
+  display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;
+}
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-group-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  color: var(--text-dim); text-transform: uppercase;
+}
+.filter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip {
+  padding: 4px 10px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent; color: var(--text-sub);
+  font-size: 11.5px; font-weight: 600; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.chip:hover { border-color: #d1d5db; color: var(--text); }
+.chip.active { border-color: var(--blue-mid); background: var(--blue-dim); color: var(--blue); }
+.chip.active.byd    { border-color: rgba(8,145,178,.25);  background: var(--byd-dim);   color: var(--byd); }
+.chip.active.ford   { border-color: rgba(37,99,235,.25);  background: var(--ford-dim);  color: var(--ford); }
+.chip.active.toyota { border-color: rgba(220,38,38,.25);  background: var(--toyota-dim);color: var(--toyota); }
 
-.pagination { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
-.pagination button { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; }
-.pagination button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* ── Date preset picker ── */
+.date-preset-wrap { position: relative; }
+.date-preset-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--text); font-size: 12px; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+  min-width: 160px; justify-content: space-between;
+}
+.date-preset-btn:hover { border-color: #d1d5db; }
+.date-preset-btn .caret {
+  color: var(--text-dim); font-size: 10px; transition: transform .15s;
+}
+.date-preset-btn.open .caret { transform: rotate(180deg); }
+.date-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 200;
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(0,0,0,.1);
+  min-width: 220px; overflow: hidden;
+  display: none;
+}
+.date-dropdown.open { display: block; }
+.date-dropdown-section { padding: 8px; }
+.date-dropdown-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  color: var(--text-dim); text-transform: uppercase;
+  padding: 4px 8px; margin-bottom: 4px;
+}
+.date-preset-item {
+  padding: 7px 10px; border-radius: var(--radius);
+  font-size: 12px; color: var(--text-sub);
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.date-preset-item:hover { background: var(--bg); color: var(--text); }
+.date-preset-item.active { background: var(--blue-dim); color: var(--blue); font-weight: 600; }
+.date-dropdown-divider { height: 1px; background: var(--border); margin: 0 8px; }
+.date-custom-section { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.date-custom-row { display: flex; align-items: center; gap: 6px; }
+.date-custom-label { font-size: 11px; color: var(--text-sub); width: 24px; }
+.date-input {
+  flex: 1; padding: 5px 8px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card-alt); color: var(--text);
+  font-size: 12px; outline: none; transition: border-color .15s;
+}
+.date-input:focus { border-color: var(--blue-mid); }
+.date-action-row { display: flex; gap: 6px; }
+.btn-apply {
+  flex: 1; padding: 5px 0;
+  border: 1px solid var(--blue); border-radius: var(--radius);
+  background: var(--blue); color: #fff;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.btn-apply:hover { background: #1d4ed8; }
+.btn-reset {
+  padding: 5px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: transparent; color: var(--text-sub);
+  font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.btn-reset:hover { color: var(--text); }
+
+/* ── Active filter tags ── */
+.filter-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.filter-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 100px;
+  background: var(--blue-dim); border: 1px solid var(--blue-mid);
+  color: var(--blue); font-size: 11px;
+}
+.filter-tag button {
+  background: none; border: none; color: inherit;
+  cursor: pointer; font-size: 13px; line-height: 1; padding: 0;
+  opacity: .6; transition: opacity .15s;
+}
+.filter-tag button:hover { opacity: 1; }
+
+/* ── Stat cards row ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  cursor: pointer; transition: all .15s;
+  display: flex; flex-direction: column; gap: 5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.03);
+}
+.stat-card:hover { border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.stat-card.active { border-color: var(--blue-mid); background: var(--blue-dim); }
+.stat-card-label { font-size: 10.5px; font-weight: 600; color: var(--text-dim); letter-spacing: .2px; }
+.stat-card-value {
+  font-size: 24px; font-weight: 800; color: var(--blue);
+  letter-spacing: -1px; line-height: 1;
+}
+.stat-card.active.platform-ig  .stat-card-value { color: #be185d; }
+.stat-card.active.platform-fb  .stat-card-value { color: var(--ford); }
+
+/* ── Two-column layout (launch report only, full width) ── */
+.two-col {
+  display: block;
+  margin-bottom: 14px;
+}
+
+/* ── Section panel ── */
+.panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.panel.no-margin { margin-bottom: 0; }
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+.panel-title {
+  font-size: 12px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.panel-title .accent-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--blue); flex-shrink: 0;
+}
+.panel-body { padding: 14px 16px; }
+
+/* ── Heatmap in sidebar ── */
+.sidebar-heatmap-section {
+  padding: 10px 10px 6px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+.sidebar-heatmap-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  color: var(--text-dim); text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-heatmap-range {
+  font-size: 9.5px; color: var(--text-dim); font-weight: 400;
+  letter-spacing: 0; text-transform: none;
+}
+.heatmap-wrap { overflow-x: auto; }
+.heatmap-table {
+  width: 100%; border-collapse: separate; border-spacing: 2px; font-size: 10.5px;
+}
+.heatmap-table th {
+  padding: 3px 4px; text-align: center;
+  color: var(--text-dim); font-weight: 600; font-size: 10px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.heatmap-table th:first-child { width: 36px; text-align: left; }
+.heatmap-table td {
+  padding: 4px 3px; text-align: center;
+  color: var(--text-dim); font-size: 10px;
+  transition: all .15s; border-radius: 4px; min-width: 18px;
+}
+.heatmap-table td.has-data {
+  cursor: pointer; font-weight: 700; color: #374151;
+}
+.heatmap-table td.has-data:hover { background: var(--blue-dim) !important; color: var(--blue); }
+.heatmap-table td.day-selected { background: var(--blue) !important; color: #fff !important; border-radius: 3px; }
+.heatmap-table td.day-dimmed { opacity: .2; }
+/* heat scale */
+.heat-1 { background: rgba(37,99,235,.07); }
+.heat-2 { background: rgba(37,99,235,.15); }
+.heat-3 { background: rgba(37,99,235,.26); }
+.heat-4 { background: rgba(37,99,235,.38); }
+.heat-5 { background: rgba(37,99,235,.52); }
+
+/* day view hint in sidebar */
+.heatmap-day-hint {
+  font-size: 10.5px; color: var(--blue);
+  padding: 5px 2px 2px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.heatmap-day-hint .clear-btn {
+  background: none; border: 1px solid var(--blue-mid);
+  border-radius: 4px; color: var(--blue); font-size: 10px;
+  padding: 1px 6px; cursor: pointer; white-space: nowrap;
+}
+.heatmap-day-hint .clear-btn:hover { background: var(--blue-dim); }
+
+/* ── Content toolbar ── */
+.content-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.content-toolbar-left {
+  font-size: 12.5px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 7px;
+}
+.count-badge {
+  padding: 2px 7px; border-radius: 4px;
+  background: var(--blue-dim); color: var(--blue);
+  font-size: 11px; font-weight: 700; border: 1px solid var(--blue-mid);
+}
+.sort-row { display: flex; gap: 4px; }
+.sort-btn {
+  padding: 4px 10px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-sub); font-size: 11.5px; cursor: pointer; transition: all .15s;
+}
+.sort-btn:hover { color: var(--text); border-color: #d1d5db; }
+.sort-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* ── Post card ── */
+.post-list { display: flex; flex-direction: column; gap: 5px; }
+.post-card {
+  background: var(--card-alt); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 11px 14px;
+  cursor: pointer; transition: all .15s;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;
+}
+.post-card:hover { border-color: #d1d5db; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.post-card:hover .post-title { color: var(--blue); }
+
+.post-card-left { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 2px; }
+.platform-icon {
+  width: 26px; height: 26px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.platform-icon.tt { background: #f3f4f6; color: #374151; }
+.platform-icon.ig { background: rgba(190,24,93,.08); color: #be185d; }
+.platform-icon.fb { background: var(--ford-dim); color: var(--ford); }
+
+.post-card-body { min-width: 0; }
+.post-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 4px; flex-wrap: wrap;
+}
+.post-date { font-size: 11px; color: var(--text-dim); }
+.post-brand { font-size: 11px; font-weight: 700; }
+.post-brand.byd    { color: var(--byd); }
+.post-brand.ford   { color: var(--ford); }
+.post-brand.toyota { color: var(--toyota); }
+
+.ct-tag {
+  padding: 1px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 700; letter-spacing: .2px;
+}
+.model-tag {
+  padding: 1px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 600;
+  background: var(--blue-dim); color: var(--blue);
+  border: 1px solid var(--blue-mid);
+}
+.post-title {
+  font-size: 12.5px; color: var(--text); line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; transition: color .15s;
+}
+
+.post-card-right {
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-end;
+  flex-shrink: 0; padding-top: 2px;
+}
+.post-stat {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--text-sub);
+}
+.post-stat .val { font-weight: 700; color: var(--text); }
+.post-stat .ico { color: var(--text-dim); font-size: 10.5px; }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex; gap: 4px; justify-content: center; margin-top: 14px;
+  flex-wrap: wrap;
+}
+.page-btn {
+  min-width: 30px; height: 30px; padding: 0 7px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); color: var(--text-sub);
+  font-size: 12px; cursor: pointer; transition: all .15s;
+}
+.page-btn:hover { color: var(--text); border-color: #d1d5db; }
+.page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.page-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ── Launch report (sales stages) ── */
+.stage-tabs {
+  display: flex; gap: 0; overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.stage-tab-btn {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-sub); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+  margin-bottom: -1px; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.stage-tab-btn:hover { color: var(--text); }
+.stage-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+.stage-tab-btn .stage-count {
+  font-size: 11px; font-weight: 700;
+  padding: 1px 6px; border-radius: 3px;
+  background: var(--bg); color: var(--text-dim);
+}
+.stage-tab-btn.active .stage-count {
+  background: var(--blue-dim); color: var(--blue);
+}
+.stage-tab-summary {
+  font-size: 11px; color: var(--text-dim);
+  display: flex; gap: 12px;
+}
+.stage-tab-summary span { display: flex; align-items: center; gap: 3px; }
+.stage-tab-summary .sum-val { font-weight: 700; color: var(--text-sub); }
+
+.stage-panel { display: none; }
+.stage-panel.active { display: block; }
+.stage-posts-scroll {
+  max-height: 380px; overflow-y: auto;
+  padding: 12px 16px; display: flex; flex-direction: column; gap: 5px;
+}
+.stage-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+/* ── Loading overlay ── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(245,247,250,.96);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.loading-box { text-align: center; }
+.loading-spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--blue);
+  animation: spin .8s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-sub); }
+
+/* ── Utilities ── */
+.hidden { display: none !important; }
+
+/* Content-type color map */
+.ct-Product          { background: rgba(37,99,235,.07);   color: #2563eb; }
+.ct-Campaign         { background: rgba(236,72,153,.07);  color: #db2777; }
+.ct-TechSafety       { background: rgba(5,150,105,.07);   color: #059669; }
+.ct-Brand            { background: rgba(124,58,237,.07);  color: #7c3aed; }
+.ct-OwnerUGC         { background: rgba(217,119,6,.07);   color: #d97706; }
+.ct-Lifestyle        { background: rgba(8,145,178,.07);   color: #0891b2; }
+.ct-Guide            { background: rgba(234,88,12,.07);   color: #ea580c; }
+.ct-Milestone        { background: rgba(168,85,247,.07);  color: #a855f7; }
+.ct-Service          { background: rgba(16,185,129,.07);  color: #10b981; }
+.ct-Creative         { background: rgba(239,68,68,.07);   color: #ef4444; }
+.ct-Other            { background: rgba(107,114,128,.07); color: #6b7280; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>品牌社媒内容管理平台</h1>
-  <div class="sub">BYD · Ford · Toyota 三品牌社交媒体内容聚合与分析</div>
-</div>
-
-<div class="container">
-
-<!-- 加载指示器 -->
-<div id="loading-indicator" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,17,23,.9); display: flex; align-items: center; justify-content: center; z-index: 9999; font-size: 16px; color: var(--text);">
-  <div style="text-align: center;">
-    <div style="font-size: 20px; margin-bottom: 16px;">⏳ 加载中...</div>
-    <div style="color: var(--muted); font-size: 12px;">正在加载社媒内容数据</div>
+<!-- Loading -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在加载社媒内容数据</div>
   </div>
 </div>
 
-<!-- ── Tabs ── -->
-<div style="display:flex;gap:16px;margin-bottom:20px;border-bottom:1px solid var(--border);overflow-x:auto">
-  <button onclick="switchTab('timeline')" class="tab-btn active" style="padding:12px 16px;background:none;border:none;color:var(--text);cursor:pointer;border-bottom:2px solid var(--accent);white-space:nowrap;transition:all .2s">📅 时间轴与车型</button>
-  <button onclick="switchTab('launch')" class="tab-btn" style="padding:12px 16px;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s">🚀 新车上市分析</button>
-</div>
-
-<!-- ── TAB 1: Timeline ── -->
-<div id="tab-timeline" class="tab-content active">
-
-<!-- ── PART 1: Filters ── -->
-<div class="filter-section">
-  <h3>筛选条件</h3>
-  
-  <div class="filter-group">
-    <div>
-      <label class="filter-label">品牌</label>
-      <div class="filter-buttons">
-        <button class="filter-btn active" data-filter="brand" data-value="all">全部</button>
-        <button class="filter-btn active byd" data-filter="brand" data-value="BYD">BYD</button>
-        <button class="filter-btn active ford" data-filter="brand" data-value="Ford">Ford</button>
-        <button class="filter-btn active toyota" data-filter="brand" data-value="Toyota">Toyota</button>
-      </div>
-    </div>
-    <div id="model-filter-group">
-      <label class="filter-label">车型</label>
-      <div class="filter-buttons" id="model-filter-buttons">
-        <button class="filter-btn active" data-filter="model" data-value="all">全部</button>
-      </div>
-    </div>
-    <div>
-      <label class="filter-label">日期范围</label>
-      <div class="date-inputs" style="gap: 4px;">
-        <input type="date" id="date-from" title="开始日期">
-        <input type="date" id="date-to" title="结束日期">
-        <button onclick="applyFilters()" style="padding:6px 12px;background:rgba(79,142,247,.6);border:1.5px solid rgba(79,142,247,.7);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(79,142,247,.8)'" onmouseout="this.style.background='rgba(79,142,247,.6)'">应用</button>
-        <button onclick="resetDateFilter()" style="padding:6px 12px;background:rgba(100,100,100,.2);border:1.5px solid rgba(100,100,100,.3);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(100,100,100,.3)'" onmouseout="this.style.background='rgba(100,100,100,.2)'">重置</button>
-      </div>
-    </div>
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <div class="dot"></div>
+    Brand Research
   </div>
-</div>
-
-<!-- ── Active Filters Display ── -->
-<div id="active-filters" style="margin-bottom:20px;display:none">
-  <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">活跃筛选条件：</div>
-  <div id="filter-tags" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-</div>
-
-<!-- ── PART 2: Platform Stats ── -->
-<div class="stats-section" id="stats-section"></div>
-
-<!-- ── PART 3: Timeline Grid ── -->
-<div class="timeline-grid" id="timeline-grid">
-  <h3>发布时间分布（年×月）</h3>
-  <table id="timeline-table"></table>
-</div>
-
-<!-- ── PART 4: Launch Report Section ── -->
-<div id="launch-report-section" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:28px;display:none">
-  <h3 style="font-size:16px;font-weight:700;margin-bottom:20px">📊 车型销售进程</h3>
-  <div id="launch-report-content" style="margin-top:16px"></div>
-</div>
-
-<!-- ── PART 5: Content List ── -->
-<div class="content-section">
-  <div class="content-header">
-    <div style="font-weight: 700;">内容列表 <span id="content-count" style="color: var(--muted); font-weight: 400;">0</span></div>
-    <div class="sort-buttons">
-      <button class="sort-btn active" data-sort="date" data-order="desc">最新发布 ↓</button>
-      <button class="sort-btn" data-sort="like" data-order="desc">点赞最多 ↓</button>
-      <button class="sort-btn" data-sort="comment" data-order="desc">评论最多 ↓</button>
-      <button class="sort-btn" data-sort="share" data-order="desc">转发最多 ↓</button>
-    </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-sub">BYD · Ford · Toyota 社交媒体内容聚合分析</div>
+  <div class="topbar-badges">
+    <span class="brand-badge byd">BYD</span>
+    <span class="brand-badge ford">Ford</span>
+    <span class="brand-badge toyota">Toyota</span>
   </div>
-  <div class="content-list" id="content-list"></div>
-  <div class="pagination" id="pagination"></div>
-</div>
+</header>
 
+<!-- App layout -->
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">数据维度</div>
+      <div class="sidebar-item" id="sidebar-total" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 11l4-6 3 4 2-3 3 5"/>
+          </svg>
+          全部内容
+        </span>
+        <span id="sidebar-total-num" style="font-size:11px;font-weight:700;color:var(--blue)">—</span>
+      </div>
+      <div class="sidebar-item" id="sidebar-tiktok" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M9 2h2c.5 2 1.8 2.8 3 3v2c-1.2 0-2.3-.4-3-1v5a4 4 0 11-4-4V9a2 2 0 102 2V2z"/>
+          </svg>
+          TikTok
+        </span>
+        <span id="sidebar-tiktok-num" style="font-size:11px;font-weight:700;color:var(--text-dim)">—</span>
+      </div>
+      <div class="sidebar-item" id="sidebar-ig" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="12" height="12" rx="3"/>
+            <circle cx="8" cy="8" r="2.5"/>
+            <circle cx="11.5" cy="4.5" r=".5" fill="currentColor"/>
+          </svg>
+          Instagram
+        </span>
+        <span id="sidebar-ig-num" style="font-size:11px;font-weight:700;color:var(--text-dim)">—</span>
+      </div>
+      <div class="sidebar-item" id="sidebar-fb" style="justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/>
+          </svg>
+          Facebook
+        </span>
+        <span id="sidebar-fb-num" style="font-size:11px;font-weight:700;color:var(--text-dim)">—</span>
+      </div>
+    </div>
+
+    <!-- Heatmap section -->
+    <div class="sidebar-heatmap-section">
+      <div class="sidebar-heatmap-title">
+        发布热力图
+        <span class="sidebar-heatmap-range" id="timeline-range-label"></span>
+      </div>
+      <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
+        <span id="heatmap-day-hint-text"></span>
+        <button class="clear-btn" onclick="clearDayFilter()">全部</button>
+      </div>
+      <div class="heatmap-wrap">
+        <table class="heatmap-table" id="timeline-table"></table>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-bar-row">
+        <div class="filter-group">
+          <div class="filter-group-label">品牌</div>
+          <div class="filter-chips">
+            <button class="chip active" data-filter="brand" data-value="all">全部</button>
+            <button class="chip active byd" data-filter="brand" data-value="BYD">BYD</button>
+            <button class="chip active ford" data-filter="brand" data-value="Ford">Ford</button>
+            <button class="chip active toyota" data-filter="brand" data-value="Toyota">Toyota</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-label">车型</div>
+          <div class="filter-chips" id="model-filter-buttons">
+            <button class="chip active" data-filter="model" data-value="all">全部</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-label">平台</div>
+          <div class="filter-chips">
+            <button class="chip active" data-filter="platform" data-value="all">全部</button>
+            <button class="chip active" data-filter="platform" data-value="tiktok">TikTok</button>
+            <button class="chip active" data-filter="platform" data-value="instagram">Instagram</button>
+            <button class="chip active" data-filter="platform" data-value="facebook">Facebook</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-label">日期范围</div>
+          <!-- Date preset picker -->
+          <div class="date-preset-wrap" id="date-preset-wrap">
+            <button class="date-preset-btn" id="date-preset-btn" onclick="toggleDateDropdown()">
+              <span id="date-preset-label">全部时间</span>
+              <span class="caret">&#9660;</span>
+            </button>
+            <div class="date-dropdown" id="date-dropdown">
+              <div class="date-dropdown-section">
+                <div class="date-dropdown-label">快捷选择</div>
+                <div class="date-preset-item active" data-preset="all" onclick="selectPreset('all')">全部时间</div>
+                <div class="date-preset-item" data-preset="7d" onclick="selectPreset('7d')">最近 7 天</div>
+                <div class="date-preset-item" data-preset="30d" onclick="selectPreset('30d')">最近 30 天</div>
+                <div class="date-preset-item" data-preset="90d" onclick="selectPreset('90d')">最近 3 个月</div>
+                <div class="date-preset-item" data-preset="180d" onclick="selectPreset('180d')">最近 6 个月</div>
+                <div class="date-preset-item" data-preset="1y" onclick="selectPreset('1y')">最近 1 年</div>
+                <div class="date-preset-item" data-preset="2024" onclick="selectPreset('2024')">2024 年</div>
+                <div class="date-preset-item" data-preset="2023" onclick="selectPreset('2023')">2023 年</div>
+              </div>
+              <div class="date-dropdown-divider"></div>
+              <div class="date-custom-section">
+                <div class="date-dropdown-label">自定义范围</div>
+                <div class="date-custom-row">
+                  <span class="date-custom-label">从</span>
+                  <input type="date" class="date-input" id="date-from">
+                </div>
+                <div class="date-custom-row">
+                  <span class="date-custom-label">至</span>
+                  <input type="date" class="date-input" id="date-to">
+                </div>
+                <div class="date-action-row">
+                  <button class="btn-apply" onclick="applyCustomDate()">应用</button>
+                  <button class="btn-reset" onclick="selectPreset('all')">重置</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active filter tags -->
+    <div id="active-filter-tags" class="filter-tags hidden"></div>
+
+    <!-- Stats row -->
+    <div class="stats-row" id="stats-row"></div>
+
+    <!-- Launch report (full width, shown when single brand+model selected) -->
+    <div class="two-col" id="two-col-section">
+      <!-- Launch report -->
+      <div class="panel no-margin" id="launch-report-panel" style="display:none">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            车型销量进程
+          </div>
+        </div>
+        <div class="stage-tabs" id="stage-tabs"></div>
+        <div id="stage-panels"></div>
+      </div>
+      <!-- Placeholder when no launch report -->
+      <div id="launch-placeholder" class="panel no-margin" style="display:flex;align-items:center;justify-content:center;min-height:180px">
+        <div style="text-align:center;color:var(--text-dim)">
+          <div style="font-size:28px;margin-bottom:8px">&#9673;</div>
+          <div style="font-size:12px">选择单一品牌 + 单一车型<br>查看销量进程</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content list -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="accent-dot"></div>
+          内容列表
+          <span class="count-badge" id="content-count-badge">0</span>
+        </div>
+        <div class="sort-row">
+          <button class="sort-btn active" data-sort="date" data-order="desc">最新</button>
+          <button class="sort-btn" data-sort="like" data-order="desc">点赞</button>
+          <button class="sort-btn" data-sort="comment" data-order="desc">评论</button>
+          <button class="sort-btn" data-sort="share" data-order="desc">转发</button>
+        </div>
+      </div>
+      <div class="panel-body" style="padding-bottom:8px">
+        <div class="post-list" id="post-list"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <script>
+/* ══════════════════════════════════════════
+   State
+══════════════════════════════════════════ */
 let allData = null;
 let filteredPosts = [];
 let currentPage = 1;
-const postsPerPage = 20;
+const PER_PAGE = 20;
+
+// Selected day for heatmap drill-down (YYYY-MM-DD or null)
+let selectedDay = null;
 
 const filters = {
-  brands: new Set(['all']),
-  models: new Set(['all']),
-  contentTypes: new Set(['all']),
+  brands:    new Set(['all']),
+  models:    new Set(['all']),
   platforms: new Set(['tiktok', 'instagram', 'facebook']),
-  dateFrom: null,
-  dateTo: null,
-  sortBy: 'date',
+  dateFrom:  null,
+  dateTo:    null,
+  sortBy:    'date',
   sortOrder: 'desc',
 };
 
-// 加载数据
+/* ══════════════════════════════════════════
+   Boot
+══════════════════════════════════════════ */
 fetch('timeline_data.json')
-  .then(r => {
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  })
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
   .then(data => {
     allData = data;
     initUI();
     applyFilters();
-    document.getElementById('loading-indicator').style.display = 'none';
+    document.getElementById('loading-overlay').style.display = 'none';
   })
   .catch(err => {
-    console.error('✗ Load error:', err);
-    document.getElementById('loading-indicator').innerHTML = `
-      <div style="text-align: center; color: #ff6b6b;">
-        <div style="font-size: 20px; margin-bottom: 16px;">❌ 加载失败</div>
-        <div style="color: var(--muted); font-size: 12px; margin-bottom: 8px;">${err.message}</div>
-        <button onclick="location.reload()" style="padding: 8px 16px; background: var(--accent); border: none; border-radius: 6px; color: #fff; cursor: pointer;">重试</button>
-      </div>
-    `;
+    document.getElementById('loading-overlay').innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#dc2626">加载失败</div>
+        <div style="color:var(--text-sub);font-size:12px;margin-bottom:14px">${err.message}</div>
+        <button onclick="location.reload()" style="padding:7px 18px;background:var(--blue);border:none;border-radius:6px;color:#fff;font-size:13px;cursor:pointer">重试</button>
+      </div>`;
   });
 
-// 初始化 UI 事件
+/* ══════════════════════════════════════════
+   Date preset dropdown
+══════════════════════════════════════════ */
+let dropdownOpen = false;
+function toggleDateDropdown() {
+  dropdownOpen = !dropdownOpen;
+  document.getElementById('date-dropdown').classList.toggle('open', dropdownOpen);
+  document.getElementById('date-preset-btn').classList.toggle('open', dropdownOpen);
+}
+document.addEventListener('click', e => {
+  if (!document.getElementById('date-preset-wrap').contains(e.target)) {
+    dropdownOpen = false;
+    document.getElementById('date-dropdown').classList.remove('open');
+    document.getElementById('date-preset-btn').classList.remove('open');
+  }
+});
+
+function selectPreset(preset) {
+  const today = new Date();
+  let from = null, to = null, label = '全部时间';
+  if (preset === '7d')   { from = daysAgo(7);   to = fmtDate(today); label = '最近 7 天'; }
+  if (preset === '30d')  { from = daysAgo(30);  to = fmtDate(today); label = '最近 30 天'; }
+  if (preset === '90d')  { from = daysAgo(90);  to = fmtDate(today); label = '最近 3 个月'; }
+  if (preset === '180d') { from = daysAgo(180); to = fmtDate(today); label = '最近 6 个月'; }
+  if (preset === '1y')   { from = daysAgo(365); to = fmtDate(today); label = '最近 1 年'; }
+  if (preset === '2024') { from = '2024-01-01'; to = '2024-12-31';   label = '2024 年'; }
+  if (preset === '2023') { from = '2023-01-01'; to = '2023-12-31';   label = '2023 年'; }
+
+  filters.dateFrom = from;
+  filters.dateTo   = to;
+  document.getElementById('date-from').value = from || '';
+  document.getElementById('date-to').value   = to   || '';
+  document.getElementById('date-preset-label').textContent = label;
+  document.querySelectorAll('.date-preset-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.preset === preset);
+  });
+  toggleDateDropdown();
+  applyFilters();
+}
+
+function applyCustomDate() {
+  filters.dateFrom = document.getElementById('date-from').value || null;
+  filters.dateTo   = document.getElementById('date-to').value   || null;
+  const label = (filters.dateFrom && filters.dateTo)
+    ? `${filters.dateFrom} ~ ${filters.dateTo}`
+    : (filters.dateFrom ? `${filters.dateFrom} 起` : (filters.dateTo ? `截至 ${filters.dateTo}` : '全部时间'));
+  document.getElementById('date-preset-label').textContent = label;
+  document.querySelectorAll('.date-preset-item').forEach(el => el.classList.remove('active'));
+  toggleDateDropdown();
+  applyFilters();
+}
+
+function daysAgo(n) {
+  const d = new Date(); d.setDate(d.getDate() - n); return fmtDate(d);
+}
+function fmtDate(d) {
+  return d.toISOString().slice(0,10);
+}
+
+/* ══════════════════════════════════════════
+   initUI
+══════════════════════════════════════════ */
 function initUI() {
-  // 首次加载时生成车型选项
   updateModelOptions();
 
   document.querySelectorAll('[data-filter="brand"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const val = e.target.dataset.value;
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.value;
       if (val === 'all') {
-        filters.brands.clear();
-        filters.brands.add('all');
-        document.querySelectorAll('[data-filter="brand"]').forEach(b => {
-          b.classList.toggle('active', b.dataset.value === 'all' || b.dataset.value === 'all');
-        });
+        filters.brands.clear(); filters.brands.add('all');
       } else {
         filters.brands.delete('all');
-        if (filters.brands.has(val)) {
-          filters.brands.delete(val);
-        } else {
-          filters.brands.add(val);
-        }
-        updateBrandButtons();
+        filters.brands.has(val) ? filters.brands.delete(val) : filters.brands.add(val);
+        if (!filters.brands.size) filters.brands.add('all');
       }
-      // 品牌变化时，重置车型筛选并更新车型列表
-      filters.models.clear();
-      filters.models.add('all');
+      updateBrandChips();
+      filters.models.clear(); filters.models.add('all');
       updateModelOptions();
       applyFilters();
     });
   });
 
-  // 内容类型筛选
-  document.querySelectorAll('[data-filter="content-type"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const val = e.target.dataset.value;
+  document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.value;
       if (val === 'all') {
-        filters.contentTypes.clear();
-        filters.contentTypes.add('all');
-        document.querySelectorAll('[data-filter="content-type"]').forEach(b => {
-          b.classList.toggle('active', true);
-        });
+        filters.platforms = filters.platforms.size === 3 ? new Set() : new Set(['tiktok','instagram','facebook']);
       } else {
-        filters.contentTypes.delete('all');
-        if (filters.contentTypes.has(val)) {
-          filters.contentTypes.delete(val);
-        } else {
-          filters.contentTypes.add(val);
-        }
-        updateContentTypeButtons();
+        filters.platforms.has(val) ? filters.platforms.delete(val) : filters.platforms.add(val);
       }
+      updatePlatformChips();
       applyFilters();
     });
   });
 
-  // 使用事件委托来处理车型按钮点击（包括动态创建的按钮）
-  document.getElementById('model-filter-buttons').addEventListener('click', (e) => {
-    if (e.target.dataset.filter !== 'model') return;
-    const val = e.target.dataset.value;
+  document.getElementById('model-filter-buttons').addEventListener('click', e => {
+    const btn = e.target.closest('[data-filter="model"]');
+    if (!btn) return;
+    const val = btn.dataset.value;
     if (val === 'all') {
-      filters.models.clear();
-      filters.models.add('all');
-      document.querySelectorAll('[data-filter="model"]').forEach(b => {
-        b.classList.toggle('active', true);
-      });
+      filters.models.clear(); filters.models.add('all');
     } else {
       filters.models.delete('all');
-      if (filters.models.has(val)) {
-        filters.models.delete(val);
-      } else {
-        filters.models.add(val);
-        // 选择车型时自动选中对应的品牌
-        autoSelectBrandForModel(val);
-      }
-      updateModelButtons();
+      filters.models.has(val) ? filters.models.delete(val) : filters.models.add(val);
+      if (!filters.models.size) filters.models.add('all');
+      autoSelectBrandForModel(val);
     }
+    updateModelChips();
     applyFilters();
   });
 
   document.querySelectorAll('.sort-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
       document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      filters.sortBy = e.target.dataset.sort;
-      filters.sortOrder = e.target.dataset.order;
+      btn.classList.add('active');
+      filters.sortBy    = btn.dataset.sort;
+      filters.sortOrder = btn.dataset.order;
       currentPage = 1;
-      applyFilters();  // 改为调用 applyFilters 以重新应用排序
+      applyFilters();
     });
   });
 }
 
-function updateBrandButtons() {
+/* ══════════════════════════════════════════
+   Chip update helpers
+══════════════════════════════════════════ */
+function updateBrandChips() {
   document.querySelectorAll('[data-filter="brand"]').forEach(btn => {
-    const val = btn.dataset.value;
-    if (val === 'all') {
-      btn.classList.toggle('active', filters.brands.size === 0 || filters.brands.has('all'));
-    } else {
-      btn.classList.toggle('active', filters.brands.has(val));
-    }
+    const v = btn.dataset.value;
+    btn.classList.toggle('active', v === 'all' ? filters.brands.has('all') : filters.brands.has(v));
   });
 }
-
-function updateModelOptions() {
-  // 获取选中品牌对应的所有车型
-  const selectedBrands = filters.brands.has('all')
-    ? ['BYD', 'Ford', 'Toyota']
-    : Array.from(filters.brands);
-
-  const availableModels = new Set();
-  if (allData && allData.all_posts) {
-    allData.all_posts.forEach(post => {
-      if (selectedBrands.includes(post.brand) && post.models && post.models.length > 0) {
-        post.models.forEach(m => availableModels.add(m));
-      }
-    });
-  }
-
-  console.log('availableModels:', Array.from(availableModels));
-
-  // 生成车型按钮 - 使用 ID 查找容器
-  const filterButtons = document.getElementById('model-filter-buttons');
-  console.log('filterButtons found:', !!filterButtons);
-  if (!filterButtons) {
-    console.error('model-filter-buttons not found!');
-    return;
-  }
-
-  filterButtons.innerHTML = '';
-
-  // 创建"全部"按钮
-  const allBtn = document.createElement('button');
-  allBtn.className = 'filter-btn active';
-  allBtn.setAttribute('data-filter', 'model');
-  allBtn.setAttribute('data-value', 'all');
-  allBtn.textContent = '全部';
-  filterButtons.appendChild(allBtn);
-
-  Array.from(availableModels).sort().forEach(model => {
-    const btn = document.createElement('button');
-    btn.className = 'filter-btn active';
-    btn.setAttribute('data-filter', 'model');
-    btn.setAttribute('data-value', model);
-    btn.textContent = model;
-    filterButtons.appendChild(btn);
+function updatePlatformChips() {
+  document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
+    const v = btn.dataset.value;
+    btn.classList.toggle('active', v === 'all' ? filters.platforms.size === 3 : filters.platforms.has(v));
   });
-
-  updateModelButtons();
 }
-
-function updateModelButtons() {
+function updateModelChips() {
   document.querySelectorAll('[data-filter="model"]').forEach(btn => {
-    const val = btn.dataset.value;
-    if (val === 'all') {
-      btn.classList.toggle('active', filters.models.size === 0 || filters.models.has('all'));
-    } else {
-      btn.classList.toggle('active', filters.models.has(val));
-    }
+    const v = btn.dataset.value;
+    btn.classList.toggle('active', v === 'all' ? filters.models.has('all') : filters.models.has(v));
   });
 }
-
-function updateContentTypeButtons() {
-  document.querySelectorAll('[data-filter="content-type"]').forEach(btn => {
-    const val = btn.dataset.value;
-    if (val === 'all') {
-      btn.classList.toggle('active', filters.contentTypes.size === 0 || filters.contentTypes.has('all'));
-    } else {
-      btn.classList.toggle('active', filters.contentTypes.has(val));
-    }
+function updateModelOptions() {
+  const brands = filters.brands.has('all') ? ['BYD','Ford','Toyota'] : Array.from(filters.brands);
+  const available = new Set();
+  if (allData && allData.all_posts) {
+    allData.all_posts.forEach(p => {
+      if (brands.includes(p.brand) && p.models) p.models.forEach(m => available.add(m));
+    });
+  }
+  const wrap = document.getElementById('model-filter-buttons');
+  wrap.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'chip active'; allBtn.dataset.filter = 'model'; allBtn.dataset.value = 'all';
+  allBtn.textContent = '全部'; wrap.appendChild(allBtn);
+  Array.from(available).sort().forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.dataset.filter = 'model'; b.dataset.value = m;
+    b.textContent = m; wrap.appendChild(b);
   });
+  updateModelChips();
 }
 
-// 根据选中的车型自动选中品牌
+/* ══════════════════════════════════════════
+   Brand → Model auto-select
+══════════════════════════════════════════ */
+const BRAND_OF = {
+  Shark:'BYD', Song:'BYD', Qin:'BYD', Yuan:'BYD', Seagull:'BYD',
+  Atto:'BYD', Sealion:'BYD', Denza:'BYD',
+  Ranger:'Ford', Mustang:'Ford', 'F-150':'Ford', Escape:'Ford',
+  Explorer:'Ford', Bronco:'Ford', 'Mach-E':'Ford', GT:'Ford',
+  Hilux:'Toyota', Corolla:'Toyota', Camry:'Toyota', '4Runner':'Toyota',
+  'Land Cruiser':'Toyota', RAV4:'Toyota', Prius:'Toyota',
+  Sequoia:'Toyota', Highlander:'Toyota', Sienna:'Toyota',
+};
 function autoSelectBrandForModel(model) {
-  // 需要根据模型名称推断品牌
-  const brandMap = {
-    // BYD 车型
-    'Shark': 'BYD', 'Song': 'BYD', 'Qin': 'BYD', 'Yuan': 'BYD', 'Seagull': 'BYD', 'Atto': 'BYD', 'Sealion': 'BYD', 'Denza': 'BYD',
-    // Ford 车型
-    'Ranger': 'Ford', 'Mustang': 'Ford', 'F-150': 'Ford', 'Escape': 'Ford', 'Explorer': 'Ford', 'Bronco': 'Ford', 'Mach-E': 'Ford', 'GT': 'Ford',
-    // Toyota 车型
-    'Hilux': 'Toyota', 'Corolla': 'Toyota', 'Camry': 'Toyota', '4Runner': 'Toyota', 'Land Cruiser': 'Toyota', 'RAV4': 'Toyota', 'Prius': 'Toyota', 'Sequoia': 'Toyota', 'Highlander': 'Toyota', 'Sienna': 'Toyota',
-  };
-
-  const brand = brandMap[model];
+  const brand = BRAND_OF[model];
   if (brand && !filters.brands.has(brand)) {
-    filters.brands.delete('all');
-    filters.brands.add(brand);
-    updateBrandButtons();
+    filters.brands.delete('all'); filters.brands.add(brand); updateBrandChips();
   }
 }
 
-// 更新筛选条件展示栏
-function updateFilterTags() {
-  const container = document.getElementById('filter-tags');
+/* ══════════════════════════════════════════
+   Filter tags
+══════════════════════════════════════════ */
+function renderFilterTags() {
   const tags = [];
+  if (!filters.brands.has('all'))    Array.from(filters.brands).forEach(v => tags.push({type:'brand',value:v,label:v}));
+  if (!filters.models.has('all'))    Array.from(filters.models).forEach(v => tags.push({type:'model',value:v,label:v}));
+  if (filters.platforms.size !== 3) Array.from(filters.platforms).forEach(v => tags.push({type:'platform',value:v,label:{tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'}[v]}));
+  if (filters.dateFrom || filters.dateTo) tags.push({type:'date',value:'date',label:`${filters.dateFrom||'—'} ~ ${filters.dateTo||'—'}`});
+  if (selectedDay) tags.push({type:'day',value:selectedDay,label:`逐日: ${selectedDay}`});
 
-  // 品牌标签
-  if (!filters.brands.has('all') && filters.brands.size > 0) {
-    Array.from(filters.brands).forEach(b => {
-      tags.push({ type: 'brand', value: b, display: b });
-    });
-  }
-
-  // 车型标签
-  if (!filters.models.has('all') && filters.models.size > 0) {
-    Array.from(filters.models).forEach(m => {
-      tags.push({ type: 'model', value: m, display: m });
-    });
-  }
-
-  // 内容类型标签
-  if (!filters.contentTypes.has('all') && filters.contentTypes.size > 0) {
-    Array.from(filters.contentTypes).forEach(ct => {
-      tags.push({ type: 'content-type', value: ct, display: ct });
-    });
-  }
-
-  // 平台标签
-  if (filters.platforms.size !== 3) {
-    Array.from(filters.platforms).forEach(p => {
-      const names = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
-      tags.push({ type: 'platform', value: p, display: names[p] });
-    });
-  }
-
-  // 日期标签
-  if (filters.dateFrom || filters.dateTo) {
-    const display = `${filters.dateFrom || '开始'} ~ ${filters.dateTo || '结束'}`;
-    tags.push({ type: 'date', value: 'date', display });
-  }
-
-  // 生成标签 HTML
-  container.innerHTML = tags.map(tag => `
-    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);border-radius:16px;font-size:12px;color:var(--accent)">
-      ${tag.display}
-      <button onclick="removeFilterTag('${tag.type}', '${tag.value}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;margin:0">✕</button>
-    </div>
-  `).join('');
-
-  // 显示/隐藏容器
-  document.getElementById('active-filters').style.display = tags.length > 0 ? 'block' : 'none';
+  const wrap = document.getElementById('active-filter-tags');
+  if (!tags.length) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  wrap.innerHTML = tags.map(t => `
+    <div class="filter-tag">
+      ${t.label}
+      <button onclick="removeTag('${t.type}','${t.value}')">×</button>
+    </div>`).join('');
 }
 
-// 删除单个筛选条件
-function removeFilterTag(type, value) {
-  if (type === 'brand') {
-    filters.brands.delete(value);
-    if (filters.brands.size === 0) filters.brands.add('all');
-    updateBrandButtons();
-  } else if (type === 'model') {
-    filters.models.delete(value);
-    if (filters.models.size === 0) filters.models.add('all');
-    updateModelButtons();
-  } else if (type === 'content-type') {
-    filters.contentTypes.delete(value);
-    if (filters.contentTypes.size === 0) filters.contentTypes.add('all');
-    updateContentTypeButtons();
-  } else if (type === 'platform') {
-    filters.platforms.delete(value);
-    if (filters.platforms.size === 0) {
-      filters.platforms.add('tiktok');
-      filters.platforms.add('instagram');
-      filters.platforms.add('facebook');
-    }
-    updateStats();
-  } else if (type === 'date') {
-    resetDateFilter();
-    return;
-  }
+function removeTag(type, value) {
+  if (type === 'brand')    { filters.brands.delete(value); if (!filters.brands.size) filters.brands.add('all'); updateBrandChips(); updateModelOptions(); }
+  if (type === 'model')    { filters.models.delete(value); if (!filters.models.size) filters.models.add('all'); updateModelChips(); }
+  if (type === 'platform') { filters.platforms.delete(value); updatePlatformChips(); }
+  if (type === 'date')     { selectPreset('all'); return; }
+  if (type === 'day')      { clearDayFilter(); return; }
   applyFilters();
 }
 
-function resetDateFilter() {
-  document.getElementById('date-from').value = '';
-  document.getElementById('date-to').value = '';
-  filters.dateFrom = null;
-  filters.dateTo = null;
-  updateFilterTags();
-  applyFilters();
-}
-
-const stageOrder = ['项目战略官宣', '概念/设计图首发', '工信部申报曝光', '实车/路测首曝', '核心技术/配置发布', '预售开启', '正式上市', '销量公布'];
-
-function renderLaunchReportCard(post) {
-  const badgeMap = { tiktok: '😊', instagram: '📷', facebook: '👍' };
-  const classMap = { tiktok: 'badge-tt', instagram: 'badge-ig', facebook: 'badge-fb' };
-  const clickHandler = post.url ? `onclick="window.open('${post.url.replace(/'/g, "\\'")}','_blank')"` : '';
-
-  let statsHtml = '';
-  if (post.platform === 'tiktok') {
-    if (post.play >= 0) statsHtml += `<span>▶ ${post.play.toLocaleString()}p</span>`;
-    if (post.like >= 0) statsHtml += `<span>♥ ${post.like.toLocaleString()}</span>`;
-    if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-    if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-  } else if (post.platform === 'instagram') {
-    if (post.like >= 0) statsHtml += `<span>♥ ${post.like.toLocaleString()}</span>`;
-    if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-    if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-  } else if (post.platform === 'facebook') {
-    if (post.like >= 0) statsHtml += `<span>👍 ${post.like.toLocaleString()}</span>`;
-    if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-    if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-  }
-
-  return `
-    <div class="content-card" ${clickHandler} style="${post.url ? 'cursor:pointer' : ''}">
-      <div class="card-meta">
-        <span class="card-badge ${classMap[post.platform]}">${badgeMap[post.platform]} ${post.platform}</span>
-        <span style="color:var(--muted)">${post.date}</span>
-      </div>
-      <div class="card-text">${post.text}</div>
-      <div class="card-stats">${statsHtml}</div>
-    </div>
-  `;
-}
-
-function updateLaunchReportDisplay() {
-  // 检查当前筛选条件
-  const selectedBrands = Array.from(filters.brands).filter(b => b !== 'all');
-  const selectedModels = Array.from(filters.models).filter(m => m !== 'all');
-
-  const section = document.getElementById('launch-report-section');
-
-  // 只有选择单个品牌和单个车型时，才显示报告部分
-  if (selectedBrands.length === 1 && selectedModels.length === 1) {
-    const brand = selectedBrands[0];
-    const model = selectedModels[0];
-
-    // 获取该车型的所有内容
-    let modelPosts = allData.all_posts.filter(post =>
-      post.brand === brand && post.models && post.models.includes(model)
-    );
-
-    // 如果内容不足，也包括"通用"内容
-    if (modelPosts.length < 10) {
-      const universalPosts = allData.all_posts.filter(post =>
-        post.brand === brand && post.models && post.models.includes('通用')
-      );
-      modelPosts = modelPosts.concat(universalPosts);
-    }
-
-    // 查找品牌的正式上市日期
-    const brandPosts = allData.all_posts.filter(p => p.brand === brand);
-    let officialLaunchDate = null;
-    brandPosts.forEach(post => {
-      if (post.launch_stage === '正式上市') {
-        if (!officialLaunchDate || post.date < officialLaunchDate) {
-          officialLaunchDate = post.date;
-        }
-      }
-    });
-
-    // 定义阶段顺序
-    const stageOrder = ['项目战略官宣', '概念/设计图首发', '工信部申报曝光', '实车/路测首曝', '核心技术/配置发布', '预售开启', '正式上市', '销量公布', '车型常规宣传'];
-
-    // 按阶段分组
-    const stageData = {};
-    stageOrder.forEach(stage => { stageData[stage] = []; });
-
-    modelPosts.forEach(post => {
-      let finalStage = post.launch_stage;
-
-      // 根据车型销售阶段和时间关系，重新分类
-      if (post.model_sales_stage === '车型设计亮点') {
-        if (officialLaunchDate) {
-          finalStage = post.date < officialLaunchDate ? '核心技术/配置发布' : '车型体验/测评';
-        }
-      } else if (post.model_sales_stage === '车型体验/测评') {
-        if (officialLaunchDate) {
-          finalStage = post.date < officialLaunchDate ? '实车/路测首曝' : '车型体验/测评';
-        }
-      } else if (post.model_sales_stage === '车型正式上市') {
-        finalStage = '正式上市';
-      } else if (post.model_sales_stage === '车型销量成绩') {
-        finalStage = '销量公布';
-      } else if (post.model_sales_stage === 'UNCLASSIFIED') {
-        // 未分类的常规宣传内容：上市前归到核心技术，上市后归到常规宣传
-        finalStage = (officialLaunchDate && post.date < officialLaunchDate) ? '核心技术/配置发布' : '车型常规宣传';
-      }
-
-      if (finalStage && stageData.hasOwnProperty(finalStage)) {
-        stageData[finalStage].push(post);
-      }
-    });
-
-    // 生成HTML
-    let html = '';
-    stageOrder.forEach((stage, idx) => {
-      const posts = stageData[stage];
-      const count = posts.length;
-
-      posts.sort((a, b) => new Date(b.date) - new Date(a.date));
-      const startDate = posts.length > 0 ? posts[posts.length - 1].date : '-';
-      const endDate = posts.length > 0 ? posts[0].date : '-';
-
-      html += `
-        <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)">
-          <div style="display:flex;gap:16px;margin-bottom:12px">
-            <div style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:rgba(79,142,247,.15);border-radius:50%;flex-shrink:0;font-weight:700;color:var(--accent);font-size:14px">${idx + 1}</div>
-            <div>
-              <div style="font-weight:700;margin-bottom:4px">${stage}</div>
-              <div style="font-size:12px;color:var(--muted)">${startDate} ~ ${endDate}</div>
-              <div style="font-size:12px;color:var(--accent);margin-top:4px">📊 ${count} 条内容 | 热度评分: ${(count * 10).toFixed(0)}</div>
-            </div>
-          </div>
-          ${count > 0 ? `
-            <div style="margin-top:12px;padding-left:48px">
-              ${posts.slice(0, 3).map(p => renderLaunchReportCard(p)).join('')}
-            </div>
-          ` : '<div style="color:var(--muted);font-size:12px;padding-left:48px">暂无相关内容</div>'}
-        </div>
-      `;
-    });
-
-    document.getElementById('launch-report-content').innerHTML = html;
-    section.style.display = 'block';
-  } else {
-    section.style.display = 'none';
-  }
-}
-
+/* ══════════════════════════════════════════
+   applyFilters
+══════════════════════════════════════════ */
 function applyFilters() {
   if (!allData) return;
 
-  filters.dateFrom = document.getElementById('date-from').value;
-  filters.dateTo = document.getElementById('date-to').value;
-
-  console.log('applyFilters called. filters.models:', Array.from(filters.models));
-
-  filteredPosts = allData.all_posts.filter(post => {
-    // 品牌筛选
-    if (!filters.brands.has('all') && !filters.brands.has(post.brand)) return false;
-    // 车型筛选
+  filteredPosts = allData.all_posts.filter(p => {
+    if (!filters.brands.has('all') && !filters.brands.has(p.brand)) return false;
     if (!filters.models.has('all')) {
-      const hasModel = Array.from(filters.models).some(m => post.models && post.models.includes(m));
-      if (!hasModel) return false;
+      if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
     }
-    // 内容类型筛选
-    if (!filters.contentTypes.has('all')) {
-      if (!filters.contentTypes.has(post.content_type)) return false;
-    }
-    // 平台筛选
-    if (!filters.platforms.has(post.platform)) return false;
-    // 日期筛选
-    if (filters.dateFrom && post.date < filters.dateFrom) return false;
-    if (filters.dateTo && post.date > filters.dateTo) return false;
+    if (!filters.platforms.has(p.platform)) return false;
+    if (filters.dateFrom && p.date < filters.dateFrom) return false;
+    if (filters.dateTo   && p.date > filters.dateTo)   return false;
+    // Day drill-down
+    if (selectedDay && p.date !== selectedDay) return false;
     return true;
   });
 
-  console.log('Filtered posts after model filter:', filteredPosts.length);
-
-  // 排序
-  filteredPosts.sort((a, b) => {
-    let aVal = 0, bVal = 0;
-    if (filters.sortBy === 'date') {
-      aVal = new Date(a.date).getTime();
-      bVal = new Date(b.date).getTime();
-    } else if (filters.sortBy === 'like') {
-      aVal = a.like || 0;
-      bVal = b.like || 0;
-    } else if (filters.sortBy === 'comment') {
-      aVal = a.comment || 0;
-      bVal = b.comment || 0;
-    } else if (filters.sortBy === 'share') {
-      aVal = a.share || 0;
-      bVal = b.share || 0;
-    }
-    return filters.sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
+  filteredPosts.sort((a,b) => {
+    let av=0, bv=0;
+    if (filters.sortBy==='date')    { av=new Date(a.date).getTime(); bv=new Date(b.date).getTime(); }
+    else if (filters.sortBy==='like')    { av=a.like||0;    bv=b.like||0; }
+    else if (filters.sortBy==='comment') { av=a.comment||0; bv=b.comment||0; }
+    else if (filters.sortBy==='share')   { av=a.share||0;   bv=b.share||0; }
+    return filters.sortOrder==='desc' ? bv-av : av-bv;
   });
 
   currentPage = 1;
-  updateStats();
+  renderStats();
   renderTimeline();
-  renderContentList();
-  updateFilterTags();
-  updateLaunchReportDisplay();
+  renderPostList();
+  renderFilterTags();
+  renderLaunchReport();
+  updateSidebarCounts();
 }
 
-function renderTimeline() {
-  const table = document.getElementById('timeline-table');
-  if (!filteredPosts.length) {
-    document.getElementById('timeline-grid').classList.remove('active');
-    return;
-  }
-
-  // 统计每个月份的发布数量
-  const monthData = {};
-  filteredPosts.forEach(post => {
-    const ym = post.date.slice(0, 7); // YYYY-MM
-    monthData[ym] = (monthData[ym] || 0) + 1;
-  });
-
-  if (Object.keys(monthData).length === 0) {
-    document.getElementById('timeline-grid').classList.remove('active');
-    return;
-  }
-
-  document.getElementById('timeline-grid').classList.add('active');
-
-  // 获取时间范围
-  const allYMs = Object.keys(monthData).sort();
-  const minYM = allYMs[0];
-  const maxYM = allYMs[allYMs.length - 1];
-  const [minY, minM] = minYM.split('-').map(Number);
-  const [maxY, maxM] = maxYM.split('-').map(Number);
-
-  // 生成表头（月份）
-  let html = '<tr><th>年份</th>';
-  for (let m = 1; m <= 12; m++) {
-    html += `<th>${m}</th>`;
-  }
-  html += '</tr>';
-
-  // 生成行（年份）
-  for (let y = minY; y <= maxY; y++) {
-    html += `<tr><th>${y}</th>`;
-    for (let m = 1; m <= 12; m++) {
-      const ym = `${y}-${String(m).padStart(2, '0')}`;
-      const count = monthData[ym] || 0;
-      if (count > 0) {
-        html += `<td class="has-data" onclick="filterByMonth('${ym}')" title="${count} 条内容">${count}</td>`;
-      } else {
-        html += '<td></td>';
-      }
-    }
-    html += '</tr>';
-  }
-
-  table.innerHTML = html;
-}
-
-function filterByMonth(ym) {
-  const dateFrom = document.getElementById('date-from');
-  const dateTo = document.getElementById('date-to');
-  const [y, m] = ym.split('-').map(Number);
-  const firstDay = ym + '-01';
-  const lastDay = ym + '-' + String(new Date(y, m, 0).getDate()).padStart(2, '0');
-
-  // 如果已经选择了日期范围，根据点击的月份扩展范围
-  if (dateFrom.value && dateTo.value) {
-    const currentFrom = dateFrom.value;
-    const currentTo = dateTo.value;
-
-    // 如果点击的月份在范围之外，扩展范围
-    if (firstDay < currentFrom) {
-      dateFrom.value = firstDay;
-    } else if (lastDay > currentTo) {
-      dateTo.value = lastDay;
-    } else if (firstDay >= currentFrom && lastDay <= currentTo) {
-      // 如果点击的月份已在范围内，则重置为仅选择该月
-      dateFrom.value = firstDay;
-      dateTo.value = lastDay;
-    }
-  } else {
-    // 第一次选择
-    dateFrom.value = firstDay;
-    dateTo.value = lastDay;
-  }
-
-  applyFilters();
-}
-
-function updateStats() {
-  const statsSection = document.getElementById('stats-section');
-  statsSection.innerHTML = '';
-
-  ['all', 'tiktok', 'instagram', 'facebook'].forEach(plat => {
-    const count = plat === 'all'
-      ? filteredPosts.length
-      : filteredPosts.filter(p => p.platform === plat).length;
-    const names = {all: '全部', tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook'};
-    const card = document.createElement('div');
-    const isActive = plat === 'all' ? filters.platforms.size === 3 : filters.platforms.has(plat);
-    card.className = `stat-card ${isActive ? 'active' : ''}`;
-    card.innerHTML = `<h4>${names[plat]}</h4><div class="count">${count}</div>`;
-    card.addEventListener('click', () => togglePlatform(plat));
-    statsSection.appendChild(card);
-  });
+/* ══════════════════════════════════════════
+   Stats
+══════════════════════════════════════════ */
+function renderStats() {
+  const wrap = document.getElementById('stats-row');
+  const platCounts = {
+    all:       filteredPosts.length,
+    tiktok:    filteredPosts.filter(p=>p.platform==='tiktok').length,
+    instagram: filteredPosts.filter(p=>p.platform==='instagram').length,
+    facebook:  filteredPosts.filter(p=>p.platform==='facebook').length,
+  };
+  const labels = {all:'全部内容',tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'};
+  wrap.innerHTML = ['all','tiktok','instagram','facebook'].map(k => {
+    const isActive = k==='all' ? filters.platforms.size===3 : filters.platforms.has(k);
+    return `<div class="stat-card ${isActive?'active':''} platform-${k}" onclick="togglePlatform('${k}')">
+      <div class="stat-card-label">${labels[k]}</div>
+      <div class="stat-card-value">${platCounts[k].toLocaleString()}</div>
+    </div>`;
+  }).join('');
 }
 
 function togglePlatform(plat) {
   if (plat === 'all') {
-    if (filters.platforms.size === 3) {
-      filters.platforms.clear();
-    } else {
-      filters.platforms.add('tiktok');
-      filters.platforms.add('instagram');
-      filters.platforms.add('facebook');
-    }
+    filters.platforms = filters.platforms.size===3 ? new Set() : new Set(['tiktok','instagram','facebook']);
   } else {
-    if (filters.platforms.has(plat)) {
-      filters.platforms.delete(plat);
-    } else {
-      filters.platforms.add(plat);
-    }
+    filters.platforms.has(plat) ? filters.platforms.delete(plat) : filters.platforms.add(plat);
   }
+  updatePlatformChips();
   applyFilters();
 }
 
-function renderContentList() {
-  const list = document.getElementById('content-list');
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  const pageData = filteredPosts.slice(start, end);
+function updateSidebarCounts() {
+  document.getElementById('sidebar-total-num').textContent  = filteredPosts.length.toLocaleString();
+  document.getElementById('sidebar-tiktok-num').textContent = filteredPosts.filter(p=>p.platform==='tiktok').length.toLocaleString();
+  document.getElementById('sidebar-ig-num').textContent     = filteredPosts.filter(p=>p.platform==='instagram').length.toLocaleString();
+  document.getElementById('sidebar-fb-num').textContent     = filteredPosts.filter(p=>p.platform==='facebook').length.toLocaleString();
+}
 
-  document.getElementById('content-count').textContent = `(${filteredPosts.length})`;
+/* ══════════════════════════════════════════
+   Timeline heatmap
+══════════════════════════════════════════ */
+function renderTimeline() {
+  const panel = document.getElementById('timeline-panel');
+  const table = document.getElementById('timeline-table');
 
-  if (!pageData.length) {
-    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px">暂无内容</div>';
+  // Base posts for heatmap: apply all filters EXCEPT selectedDay
+  const basePosts = allData.all_posts.filter(p => {
+    if (!filters.brands.has('all') && !filters.brands.has(p.brand)) return false;
+    if (!filters.models.has('all')) {
+      if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
+    }
+    if (!filters.platforms.has(p.platform)) return false;
+    if (filters.dateFrom && p.date < filters.dateFrom) return false;
+    if (filters.dateTo   && p.date > filters.dateTo)   return false;
+    return true;
+  });
+
+  const dayData = {};
+  basePosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
+
+  const days = Object.keys(dayData).sort();
+  if (!days.length) { return; }
+
+  const maxVal = Math.max(...Object.values(dayData));
+
+  // Group by year-month
+  const monthSet = new Set(days.map(d => d.slice(0,7)));
+  const yms = Array.from(monthSet).sort();
+  const [minY] = yms[0].split('-').map(Number);
+  const [maxY] = yms[yms.length-1].split('-').map(Number);
+
+  document.getElementById('timeline-range-label').textContent = `${yms[0]} — ${yms[yms.length-1]}`;
+
+  // Show/hide day hint
+  const hint = document.getElementById('heatmap-day-hint');
+  if (selectedDay) {
+    hint.classList.remove('hidden');
+    document.getElementById('heatmap-day-hint-text').textContent = `仅显示 ${selectedDay} 的内容（共 ${dayData[selectedDay]||0} 条）`;
+  } else {
+    hint.classList.add('hidden');
+  }
+
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  let html = `<tr><th>年份</th>${months.map(m=>`<th>${m}</th>`).join('')}</tr>`;
+
+  for (let y=minY; y<=maxY; y++) {
+    html += `<tr><th>${y}</th>`;
+    for (let m=1; m<=12; m++) {
+      const ym = `${y}-${String(m).padStart(2,'0')}`;
+      // Aggregate per month (sum of days in that month)
+      const monthDays = Object.entries(dayData).filter(([d]) => d.startsWith(ym));
+      const cnt = monthDays.reduce((s,[,v]) => s+v, 0);
+      // Check if selectedDay is in this month
+      const isSelectedMonth = selectedDay && selectedDay.startsWith(ym);
+
+      if (cnt) {
+        const heat = Math.ceil((cnt/maxVal)*5);
+        const classes = ['has-data', `heat-${heat}`];
+        if (selectedDay) {
+          if (isSelectedMonth) classes.push('day-selected');
+          else classes.push('day-dimmed');
+        }
+        html += `<td class="${classes.join(' ')}" onclick="filterByMonth('${ym}')" title="${ym}: ${cnt} 条内容">${cnt}</td>`;
+      } else {
+        html += `<td></td>`;
+      }
+    }
+    html += '</tr>';
+  }
+  table.innerHTML = html;
+}
+
+function filterByMonth(ym) {
+  // If clicking the already-selected month/day => toggle off
+  if (selectedDay && selectedDay.startsWith(ym)) {
+    clearDayFilter();
+    return;
+  }
+  // Find the most active day in this month to represent "the day"
+  const basePosts = allData.all_posts.filter(p => {
+    if (!filters.brands.has('all') && !filters.brands.has(p.brand)) return false;
+    if (!filters.models.has('all')) {
+      if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
+    }
+    if (!filters.platforms.has(p.platform)) return false;
+    if (filters.dateFrom && p.date < filters.dateFrom) return false;
+    if (filters.dateTo   && p.date > filters.dateTo)   return false;
+    return true;
+  });
+  const dayData = {};
+  basePosts.filter(p => p.date.startsWith(ym)).forEach(p => {
+    dayData[p.date] = (dayData[p.date]||0) + 1;
+  });
+  // Use the whole month range as a "selected month" anchor
+  // Set selectedDay to ym (month) so we dim others
+  // Actually: clicking month => filter to that month's posts (day = first of month as anchor)
+  const [y,mo] = ym.split('-').map(Number);
+  const first = ym+'-01';
+  const last  = ym+'-'+String(new Date(y,mo,0).getDate()).padStart(2,'0');
+
+  // Use date range filter for month, and track the visual selection
+  selectedDay = ym; // store as YYYY-MM for month-level selection
+  filters.dateFrom = first;
+  filters.dateTo   = last;
+  document.getElementById('date-from').value = first;
+  document.getElementById('date-to').value   = last;
+  document.getElementById('date-preset-label').textContent = `${ym}`;
+  document.querySelectorAll('.date-preset-item').forEach(el => el.classList.remove('active'));
+  applyFilters();
+}
+
+function clearDayFilter() {
+  selectedDay = null;
+  // Reset date if it was set by the heatmap click
+  selectPreset('all');
+}
+
+/* ══════════════════════════════════════════
+   Post list
+══════════════════════════════════════════ */
+const CT_CLASS = {
+  'Product':'ct-Product','Campaign':'ct-Campaign','Tech & Safety':'ct-TechSafety',
+  'Brand':'ct-Brand','Owner & UGC':'ct-OwnerUGC','Lifestyle & Scenario':'ct-Lifestyle',
+  'Guide':'ct-Guide','Milestone':'ct-Milestone','Service':'ct-Service',
+  'Creative & Hot Topic':'ct-Creative',
+};
+const CT_LABEL = {
+  'Product':'产品','Campaign':'营销活动','Tech & Safety':'技术安全',
+  'Brand':'品牌','Owner & UGC':'UGC','Lifestyle & Scenario':'生活方式',
+  'Guide':'导购','Milestone':'里程碑','Service':'服务',
+  'Creative & Hot Topic':'创意热点',
+};
+const PLAT_ICON = {
+  tiktok:   `<div class="platform-icon tt">T</div>`,
+  instagram:`<div class="platform-icon ig">IG</div>`,
+  facebook: `<div class="platform-icon fb">f</div>`,
+};
+
+function renderPostList() {
+  const list  = document.getElementById('post-list');
+  const badge = document.getElementById('content-count-badge');
+  badge.textContent = filteredPosts.length.toLocaleString();
+
+  const start = (currentPage-1)*PER_PAGE;
+  const slice = filteredPosts.slice(start, start+PER_PAGE);
+
+  if (!slice.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:12px">暂无内容</div>`;
     document.getElementById('pagination').innerHTML = '';
     return;
   }
 
-  list.innerHTML = pageData.map((post, idx) => {
-    const badgeMap = { tiktok: '😊', instagram: '📷', facebook: '👍' };
-    const classMap = { tiktok: 'badge-tt', instagram: 'badge-ig', facebook: 'badge-fb' };
-    const clickHandler = post.url ? `onclick="window.open('${post.url.replace(/'/g, "\\'")}','_blank')"` : '';
-
-    // 根据平台类型显示对应的统计数据
-    let statsHtml = '';
-    if (post.platform === 'tiktok') {
-      if (post.play >= 0) statsHtml += `<span>▶ ${post.play.toLocaleString()}p</span>`;
-      if (post.like >= 0) statsHtml += `<span>♥ ${post.like.toLocaleString()}</span>`;
-      if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-      if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-    } else if (post.platform === 'instagram') {
-      if (post.like >= 0) statsHtml += `<span>♥ ${post.like.toLocaleString()}</span>`;
-      if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-      if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-    } else if (post.platform === 'facebook') {
-      if (post.like >= 0) statsHtml += `<span>👍 ${post.like.toLocaleString()}</span>`;
-      if (post.comment >= 0) statsHtml += `<span>💬 ${post.comment.toLocaleString()}</span>`;
-      if (post.share >= 0) statsHtml += `<span>↗ ${post.share.toLocaleString()}</span>`;
-    }
-
-    // 内容类型中英文映射
-    const contentTypeNameMap = {
-      'Product': '产品 Product',
-      'Campaign': '营销活动 Campaign',
-      'Tech & Safety': '技术安全 Tech & Safety',
-      'Brand': '品牌价值 Brand',
-      'Owner & UGC': '用户内容 Owner & UGC',
-      'Lifestyle & Scenario': '生活方式 Lifestyle',
-      'Guide': '导购干货 Guide',
-      'Milestone': '成就里程 Milestone',
-      'Service': '服务售后 Service',
-      'Creative & Hot Topic': '创意热点 Creative',
-      '其他': '其他 Other',
-    };
-
-    // 内容类型标签颜色映射
-    const contentTypeColorMap = {
-      'Product': 'rgba(59,130,246,.15)',
-      'Campaign': 'rgba(236,72,153,.15)',
-      'Tech & Safety': 'rgba(16,185,129,.15)',
-      'Brand': 'rgba(139,92,246,.15)',
-      'Owner & UGC': 'rgba(245,158,11,.15)',
-      'Lifestyle & Scenario': 'rgba(8,145,178,.15)',
-      'Guide': 'rgba(249,115,22,.15)',
-      'Milestone': 'rgba(168,85,247,.15)',
-      'Service': 'rgba(52,211,153,.15)',
-      'Creative & Hot Topic': 'rgba(244,63,94,.15)',
-      '其他': 'rgba(107,114,128,.15)',
-    };
-
-    const contentTypeTextColorMap = {
-      'Product': '#3b82f6',
-      'Campaign': '#ec4899',
-      'Tech & Safety': '#10b981',
-      'Brand': '#8b5cf6',
-      'Owner & UGC': '#f59e0b',
-      'Lifestyle & Scenario': '#0891b2',
-      'Guide': '#f97316',
-      'Milestone': '#a855f7',
-      'Service': '#34d399',
-      'Creative & Hot Topic': '#f43f5e',
-      '其他': '#6b7280',
-    };
-
-    const displayContentType = contentTypeNameMap[post.content_type] || contentTypeNameMap['其他'];
-
-    return `
-      <div class="content-card" ${clickHandler} style="${post.url ? 'cursor:pointer' : ''}">
-        <div class="card-meta">
-          <span class="card-badge ${classMap[post.platform]}">${badgeMap[post.platform]} ${post.platform}</span>
-          <span style="color:var(--muted)">${post.date}</span>
-          <span style="color:var(--accent);font-weight:600;margin-left:auto">${post.brand}</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-          <span style="display:inline-block;padding:2px 8px;background:${contentTypeColorMap[post.content_type] || contentTypeColorMap['其他']};color:${contentTypeTextColorMap[post.content_type] || contentTypeTextColorMap['其他']};border-radius:12px;font-size:11px;font-weight:600">${displayContentType}</span>
-          ${post.models && post.models.length > 0 ? `<span style="display:inline-block;padding:2px 8px;background:rgba(79,142,247,.1);color:var(--accent);border-radius:12px;font-size:11px;font-weight:600">${post.models.join(', ')}</span>` : ''}
-        </div>
-        <div class="card-text">${post.text}</div>
-        <div class="card-stats">${statsHtml}</div>
-      </div>
-    `;
-  }).join('');
-
+  list.innerHTML = slice.map(p => renderPostCard(p, true)).join('');
   renderPagination();
 }
 
-function renderPagination() {
-  const pagination = document.getElementById('pagination');
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-  let html = '';
-  for (let i = 1; i <= totalPages; i++) {
-    html += `<button class="${i === currentPage ? 'active' : ''}" onclick="currentPage=${i};renderContentList()">${i}</button>`;
+function renderPostCard(p, showStats) {
+  const ctClass = CT_CLASS[p.content_type]||'ct-Other';
+  const ctLabel = CT_LABEL[p.content_type]||'其他';
+  const brandClass = (p.brand||'').toLowerCase();
+  const clickAttr  = p.url ? `onclick="window.open('${p.url.replace(/'/g,"\\'")}','_blank')"` : '';
+
+  let stats = '';
+  if (showStats) {
+    if (p.platform==='tiktok') {
+      if (p.play>=0)    stats += statChip('▶', p.play);
+      if (p.like>=0)    stats += statChip('♥', p.like);
+      if (p.comment>=0) stats += statChip('✦', p.comment);
+      if (p.share>=0)   stats += statChip('↗', p.share);
+    } else if (p.platform==='instagram') {
+      if (p.like>=0)    stats += statChip('♥', p.like);
+      if (p.comment>=0) stats += statChip('✦', p.comment);
+      if (p.share>=0)   stats += statChip('↗', p.share);
+    } else {
+      if (p.like>=0)    stats += statChip('♥', p.like);
+      if (p.comment>=0) stats += statChip('✦', p.comment);
+      if (p.share>=0)   stats += statChip('↗', p.share);
+    }
   }
-  pagination.innerHTML = html;
+
+  const modelTags = p.models && p.models.length
+    ? p.models.map(m=>`<span class="model-tag">${m}</span>`).join('')
+    : '';
+
+  return `<div class="post-card" ${clickAttr}>
+    <div class="post-card-left">${PLAT_ICON[p.platform]||''}</div>
+    <div class="post-card-body">
+      <div class="post-meta">
+        <span class="post-date">${p.date}</span>
+        <span class="post-brand ${brandClass}">${p.brand}</span>
+        <span class="ct-tag ${ctClass}">${ctLabel}</span>
+        ${modelTags}
+      </div>
+      <div class="post-title">${p.text||''}</div>
+    </div>
+    <div class="post-card-right">${stats}</div>
+  </div>`;
+}
+
+function statChip(icon, val) {
+  return `<div class="post-stat"><span class="ico">${icon}</span><span class="val">${(val||0).toLocaleString()}</span></div>`;
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredPosts.length / PER_PAGE);
+  let html = '';
+  if (total <= 1) { document.getElementById('pagination').innerHTML=''; return; }
+
+  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&#8249;</button>`;
+  const range = [];
+  for (let i=1; i<=total; i++) {
+    if (i===1 || i===total || Math.abs(i-currentPage)<=2) range.push(i);
+    else if (range[range.length-1]!=='…') range.push('…');
+  }
+  range.forEach(p => {
+    if (p==='…') html += `<button class="page-btn" disabled>…</button>`;
+    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>&#8250;</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(n) {
+  const total = Math.ceil(filteredPosts.length / PER_PAGE);
+  if (n<1||n>total) return;
+  currentPage = n;
+  renderPostList();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   Launch Report (Sales Stages)
+══════════════════════════════════════════ */
+const STAGE_ORDER = [
+  '项目战略官宣','概念/设计图首发','工信部申报曝光','实车/路测首曝',
+  '核心技术/配置发布','预售开启','正式上市','销量公布','车型常规宣传'
+];
+
+let activeStage = null;
+
+function renderLaunchReport() {
+  const panel       = document.getElementById('launch-report-panel');
+  const placeholder = document.getElementById('launch-placeholder');
+  const tabsEl      = document.getElementById('stage-tabs');
+  const panelsEl    = document.getElementById('stage-panels');
+
+  const selBrands = Array.from(filters.brands).filter(b=>b!=='all');
+  const selModels = Array.from(filters.models).filter(m=>m!=='all');
+
+  if (selBrands.length!==1 || selModels.length!==1) {
+    panel.style.display = 'none';
+    placeholder.style.display = 'flex';
+    return;
+  }
+
+  panel.style.display = 'block';
+  placeholder.style.display = 'none';
+
+  const brand = selBrands[0], model = selModels[0];
+  const posts = allData.all_posts.filter(p => p.brand===brand && p.models && p.models.includes(model));
+
+  let launchDate = null;
+  allData.all_posts.filter(p=>p.brand===brand).forEach(p => {
+    if (p.launch_stage==='正式上市') {
+      if (!launchDate||p.date<launchDate) launchDate=p.date;
+    }
+  });
+
+  const staged = {};
+  STAGE_ORDER.forEach(s => staged[s]=[]);
+  posts.forEach(p => {
+    let s = p.launch_stage;
+    if (p.model_sales_stage==='车型设计亮点')   s = launchDate && p.date<launchDate ? '核心技术/配置发布':'车型体验/测评';
+    else if (p.model_sales_stage==='车型体验/测评') s = launchDate && p.date<launchDate ? '实车/路测首曝':'车型体验/测评';
+    else if (p.model_sales_stage==='车型正式上市') s = '正式上市';
+    else if (p.model_sales_stage==='车型销量成绩') s = '销量公布';
+    else if (p.model_sales_stage==='UNCLASSIFIED') s = (launchDate&&p.date<launchDate)?'核心技术/配置发布':'车型常规宣传';
+    if (s && staged[s]) staged[s].push(p);
+  });
+
+  // Default active stage to first one with content
+  const firstWithContent = STAGE_ORDER.find(s => staged[s].length > 0);
+  if (!activeStage || !staged[activeStage] || staged[activeStage].length === 0) {
+    activeStage = firstWithContent || STAGE_ORDER[0];
+  }
+
+  // Build tabs
+  tabsEl.innerHTML = STAGE_ORDER.map(stage => {
+    const sp = staged[stage] || [];
+    const cnt = sp.length;
+    const totalLikes    = sp.reduce((s,p)=>(p.like||0)+s, 0);
+    const totalComments = sp.reduce((s,p)=>(p.comment||0)+s, 0);
+    const totalShares   = sp.reduce((s,p)=>(p.share||0)+s, 0);
+    return `<button class="stage-tab-btn ${stage===activeStage?'active':''}" onclick="switchStage('${stage}')">
+      ${stage}
+      <span class="stage-count">${cnt}</span>
+    </button>`;
+  }).join('');
+
+  // Build panels
+  panelsEl.innerHTML = STAGE_ORDER.map(stage => {
+    const sp = (staged[stage]||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const cnt = sp.length;
+    const totalLikes    = sp.reduce((s,p)=>(p.like||0)+s, 0);
+    const totalComments = sp.reduce((s,p)=>(p.comment||0)+s, 0);
+    const totalShares   = sp.reduce((s,p)=>(p.share||0)+s, 0);
+    const dateRange = cnt ? `${sp[sp.length-1].date} — ${sp[0].date}` : '—';
+
+    const summaryHtml = cnt ? `
+      <div class="stage-tab-summary">
+        <span>♥ <span class="sum-val">${totalLikes.toLocaleString()}</span></span>
+        <span>✦ <span class="sum-val">${totalComments.toLocaleString()}</span></span>
+        <span>↗ <span class="sum-val">${totalShares.toLocaleString()}</span></span>
+        <span style="margin-left:4px;color:var(--text-dim)">${dateRange}</span>
+      </div>` : '';
+
+    const postsHtml = cnt
+      ? sp.map(p => renderPostCard(p, true)).join('')
+      : `<div style="text-align:center;padding:30px;color:var(--text-dim);font-size:12px">该阶段暂无内容</div>`;
+
+    return `<div class="stage-panel ${stage===activeStage?'active':''}" data-stage="${stage}">
+      <div class="stage-panel-header">
+        ${summaryHtml}
+      </div>
+      <div class="stage-posts-scroll">${postsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function switchStage(stage) {
+  activeStage = stage;
+  document.querySelectorAll('.stage-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim().startsWith(stage));
+  });
+  document.querySelectorAll('.stage-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.dataset.stage === stage);
+  });
 }
 </script>
 </body>

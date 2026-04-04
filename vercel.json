@@ -1,5 +1,7 @@
 {
   "version": 2,
   "name": "brand-research",
-  "public": true
+  "public": true,
+  "devCommand": "npx serve . --listen 3000",
+  "installCommand": "npm install -g serve"
 }
