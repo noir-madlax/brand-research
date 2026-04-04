@@ -117,14 +117,20 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', 'PingFan
     </div>
     <div>
       <label class="filter-label">日期范围</label>
-      <div class="date-inputs">
-        <input type="date" id="date-from">
-        <span style="color: var(--muted);">到</span>
-        <input type="date" id="date-to">
-        <button onclick="applyFilters()">应用</button>
+      <div class="date-inputs" style="gap: 4px;">
+        <input type="date" id="date-from" title="开始日期">
+        <input type="date" id="date-to" title="结束日期">
+        <button onclick="applyFilters()" style="padding:6px 12px;background:rgba(79,142,247,.6);border:1.5px solid rgba(79,142,247,.7);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(79,142,247,.8)'" onmouseout="this.style.background='rgba(79,142,247,.6)'">应用</button>
+        <button onclick="resetDateFilter()" style="padding:6px 12px;background:rgba(100,100,100,.2);border:1.5px solid rgba(100,100,100,.3);border-radius:6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(100,100,100,.3)'" onmouseout="this.style.background='rgba(100,100,100,.2)'">重置</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- ── Active Filters Display ── -->
+<div id="active-filters" style="margin-bottom:20px;display:none">
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">活跃筛选条件：</div>
+  <div id="filter-tags" style="display:flex;flex-wrap:wrap;gap:8px"></div>
 </div>
 
 <!-- ── PART 2: Platform Stats ── -->
@@ -176,7 +182,6 @@ fetch('timeline_data.json')
     return r.json();
   })
   .then(data => {
-    console.log('✓ Data loaded:', data.all_posts?.length || 0, 'posts');
     allData = data;
     initUI();
     applyFilters();
@@ -195,10 +200,8 @@ fetch('timeline_data.json')
 
 // 初始化 UI 事件
 function initUI() {
-  console.log('initUI called, allData posts:', allData?.all_posts?.length);
   // 首次加载时生成车型选项
   updateModelOptions();
-  console.log('updateModelOptions called');
 
   document.querySelectorAll('[data-filter="brand"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -230,7 +233,6 @@ function initUI() {
   document.getElementById('model-filter-buttons').addEventListener('click', (e) => {
     if (e.target.dataset.filter !== 'model') return;
     const val = e.target.dataset.value;
-    console.log('Model button clicked:', val);
     if (val === 'all') {
       filters.models.clear();
       filters.models.add('all');
@@ -243,10 +245,11 @@ function initUI() {
         filters.models.delete(val);
       } else {
         filters.models.add(val);
+        // 选择车型时自动选中对应的品牌
+        autoSelectBrandForModel(val);
       }
       updateModelButtons();
     }
-    console.log('After model click, filters.models:', Array.from(filters.models));
     applyFilters();
   });
 
@@ -331,6 +334,105 @@ function updateModelButtons() {
   });
 }
 
+// 根据选中的车型自动选中品牌
+function autoSelectBrandForModel(model) {
+  // 需要根据模型名称推断品牌
+  const brandMap = {
+    // BYD 车型
+    'Shark': 'BYD', 'Song': 'BYD', 'Qin': 'BYD', 'Yuan': 'BYD', 'Seagull': 'BYD', 'Atto': 'BYD', 'Sealion': 'BYD', 'Denza': 'BYD',
+    // Ford 车型
+    'Ranger': 'Ford', 'Mustang': 'Ford', 'F-150': 'Ford', 'Escape': 'Ford', 'Explorer': 'Ford', 'Bronco': 'Ford', 'Mach-E': 'Ford', 'GT': 'Ford',
+    // Toyota 车型
+    'Hilux': 'Toyota', 'Corolla': 'Toyota', 'Camry': 'Toyota', '4Runner': 'Toyota', 'Land Cruiser': 'Toyota', 'RAV4': 'Toyota', 'Prius': 'Toyota', 'Sequoia': 'Toyota', 'Highlander': 'Toyota', 'Sienna': 'Toyota',
+  };
+
+  const brand = brandMap[model];
+  if (brand && !filters.brands.has(brand)) {
+    filters.brands.delete('all');
+    filters.brands.add(brand);
+    updateBrandButtons();
+  }
+}
+
+// 更新筛选条件展示栏
+function updateFilterTags() {
+  const container = document.getElementById('filter-tags');
+  const tags = [];
+
+  // 品牌标签
+  if (!filters.brands.has('all') && filters.brands.size > 0) {
+    Array.from(filters.brands).forEach(b => {
+      tags.push({ type: 'brand', value: b, display: b });
+    });
+  }
+
+  // 车型标签
+  if (!filters.models.has('all') && filters.models.size > 0) {
+    Array.from(filters.models).forEach(m => {
+      tags.push({ type: 'model', value: m, display: m });
+    });
+  }
+
+  // 平台标签
+  if (filters.platforms.size !== 3) {
+    Array.from(filters.platforms).forEach(p => {
+      const names = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
+      tags.push({ type: 'platform', value: p, display: names[p] });
+    });
+  }
+
+  // 日期标签
+  if (filters.dateFrom || filters.dateTo) {
+    const display = `${filters.dateFrom || '开始'} ~ ${filters.dateTo || '结束'}`;
+    tags.push({ type: 'date', value: 'date', display });
+  }
+
+  // 生成标签 HTML
+  container.innerHTML = tags.map(tag => `
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);border-radius:16px;font-size:12px;color:var(--accent)">
+      ${tag.display}
+      <button onclick="removeFilterTag('${tag.type}', '${tag.value}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;margin:0">✕</button>
+    </div>
+  `).join('');
+
+  // 显示/隐藏容器
+  document.getElementById('active-filters').style.display = tags.length > 0 ? 'block' : 'none';
+}
+
+// 删除单个筛选条件
+function removeFilterTag(type, value) {
+  if (type === 'brand') {
+    filters.brands.delete(value);
+    if (filters.brands.size === 0) filters.brands.add('all');
+    updateBrandButtons();
+  } else if (type === 'model') {
+    filters.models.delete(value);
+    if (filters.models.size === 0) filters.models.add('all');
+    updateModelButtons();
+  } else if (type === 'platform') {
+    filters.platforms.delete(value);
+    if (filters.platforms.size === 0) {
+      filters.platforms.add('tiktok');
+      filters.platforms.add('instagram');
+      filters.platforms.add('facebook');
+    }
+    updateStats();
+  } else if (type === 'date') {
+    resetDateFilter();
+    return;
+  }
+  applyFilters();
+}
+
+function resetDateFilter() {
+  document.getElementById('date-from').value = '';
+  document.getElementById('date-to').value = '';
+  filters.dateFrom = null;
+  filters.dateTo = null;
+  updateFilterTags();
+  applyFilters();
+}
+
 function applyFilters() {
   if (!allData) return;
 
@@ -380,6 +482,7 @@ function applyFilters() {
   updateStats();
   renderTimeline();
   renderContentList();
+  updateFilterTags();
 }
 
 function renderTimeline() {
@@ -436,10 +539,33 @@ function renderTimeline() {
 }
 
 function filterByMonth(ym) {
-  document.getElementById('date-from').value = ym + '-01';
+  const dateFrom = document.getElementById('date-from');
+  const dateTo = document.getElementById('date-to');
   const [y, m] = ym.split('-').map(Number);
-  const lastDay = new Date(y, m, 0).getDate();
-  document.getElementById('date-to').value = ym + '-' + String(lastDay).padStart(2, '0');
+  const firstDay = ym + '-01';
+  const lastDay = ym + '-' + String(new Date(y, m, 0).getDate()).padStart(2, '0');
+
+  // 如果已经选择了日期范围，根据点击的月份扩展范围
+  if (dateFrom.value && dateTo.value) {
+    const currentFrom = dateFrom.value;
+    const currentTo = dateTo.value;
+
+    // 如果点击的月份在范围之外，扩展范围
+    if (firstDay < currentFrom) {
+      dateFrom.value = firstDay;
+    } else if (lastDay > currentTo) {
+      dateTo.value = lastDay;
+    } else if (firstDay >= currentFrom && lastDay <= currentTo) {
+      // 如果点击的月份已在范围内，则重置为仅选择该月
+      dateFrom.value = firstDay;
+      dateTo.value = lastDay;
+    }
+  } else {
+    // 第一次选择
+    dateFrom.value = firstDay;
+    dateTo.value = lastDay;
+  }
+
   applyFilters();
 }
 
