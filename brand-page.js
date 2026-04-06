@@ -180,12 +180,16 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Count posts per account handle
+  // Count posts per platform:handle key (avoids cross-platform same-name collisions)
+  // key format: "tiktok:ford", "instagram:ford", etc.
   const acctCount = {};
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => {
       const h = p.account || p.handle || handleFromUrl(p.url);
-      if (h) acctCount[h] = (acctCount[h] || 0) + 1;
+      if (h && p.platform) {
+        const key = `${p.platform}:${h}`;
+        acctCount[key] = (acctCount[key] || 0) + 1;
+      }
     });
   }
 
@@ -212,14 +216,16 @@ function buildSidebarPlatform() {
 
     accounts.forEach(acc => {
       const rawHandle = (acc.handle || '').replace(/^@/, '');
-      const isAccActive = selectedAccount === '@' + rawHandle;
-      const accCnt = acctCount[rawHandle] || 0;
-      html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-handle="${rawHandle}" onclick="selectAccount('@${rawHandle}')">
+      // Unique key includes platform to avoid collision (e.g. tiktok:ford vs instagram:ford)
+      const acctKey = `${plat}:${rawHandle}`;
+      const isAccActive = selectedAccount === acctKey;
+      const accCnt = acctCount[acctKey] || 0;
+      html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')">
         <span class="sp-label-row sp-account-label">
           <span class="sp-indent"></span>
           ${acc.handle}
         </span>
-        <span class="sp-num sp-acct-num" id="sp-num-acct-${rawHandle}">${accCnt.toLocaleString()}</span>
+        <span class="sp-num sp-acct-num">${accCnt.toLocaleString()}</span>
       </div>`;
     });
   });
@@ -229,18 +235,19 @@ function buildSidebarPlatform() {
 
 function selectAccount(val) {
   selectedAccount = val;
-  // Sync platform filter set with the selection
+  // val is one of:
+  //   null              → all platforms
+  //   'tiktok'          → platform-level (no colon, no @)
+  //   'tiktok:ford'     → account-level key (platform:handle)
   if (!val) {
     filters.platforms = new Set(['tiktok', 'instagram', 'facebook']);
-  } else if (!val.startsWith('@')) {
-    // platform-level: only this platform
-    filters.platforms = new Set([val]);
+  } else if (val.includes(':')) {
+    // account-level: extract platform from key
+    const plat = val.split(':')[0];
+    filters.platforms = new Set([plat]);
   } else {
-    // account-level: enable only that platform
-    // platform is derived from BRAND_CONFIG.accounts
-    const rawHandle = val.slice(1);
-    const acc = BRAND_CONFIG.accounts && BRAND_CONFIG.accounts.find(a => (a.handle || '').replace(/^@/,'') === rawHandle);
-    if (acc) filters.platforms = new Set([acc.platform.toLowerCase()]);
+    // platform-level
+    filters.platforms = new Set([val]);
   }
   applyFilters();
   buildSidebarPlatform();
@@ -427,7 +434,14 @@ function renderFilterTags() {
   const tags = [];
   if (!filters.models.has('all'))    Array.from(filters.models).forEach(v => tags.push({type:'model',value:v,label:v}));
   if (selectedAccount) {
-    const acctLabel = selectedAccount.startsWith('@') ? selectedAccount : ({tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[selectedAccount] || selectedAccount);
+    let acctLabel;
+    if (selectedAccount.includes(':')) {
+      const [plat, handle] = selectedAccount.split(':');
+      const platLabel = {tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[plat] || plat;
+      acctLabel = `${platLabel} · @${handle}`;
+    } else {
+      acctLabel = {tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[selectedAccount] || selectedAccount;
+    }
     tags.push({type:'account', value: selectedAccount, label: acctLabel});
   }
   if (filters.dateFrom || filters.dateTo) tags.push({type:'date',value:'date',label:`${filters.dateFrom||'—'} ~ ${filters.dateTo||'—'}`});
@@ -474,11 +488,12 @@ function applyFilters() {
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
     if (selectedDay && p.date !== selectedDay) return false;
-    // account-level filter
-    if (selectedAccount && selectedAccount.startsWith('@')) {
-      const rawHandle = selectedAccount.slice(1);
+    // account-level filter (key format: "platform:handle")
+    if (selectedAccount && selectedAccount.includes(':')) {
+      const [acctPlat, acctHandle] = selectedAccount.split(':');
+      if (p.platform !== acctPlat) return false;
       const postHandle = p.account || p.handle || handleFromUrl(p.url);
-      if (postHandle !== rawHandle) return false;
+      if (postHandle !== acctHandle) return false;
     }
     return true;
   });
