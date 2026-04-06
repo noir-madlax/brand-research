@@ -706,11 +706,14 @@ function renderPostCard(p, showStats) {
     ? p.models.map(m=>`<span class="model-tag">${m}</span>`).join('')
     : '';
 
+  const accountName = p.username || p.account_name || '';
+
   return `<div class="post-card" ${clickAttr}>
     <div class="post-card-left">${PLAT_ICON[p.platform]||''}</div>
     <div class="post-card-body">
       <div class="post-meta">
         <span class="post-date">${p.date}</span>
+        ${accountName ? `<span class="post-account">@${accountName}</span>` : ''}
         <span class="ct-tag ${ctClass}">${ctLabel}</span>
         ${modelTags}
       </div>
