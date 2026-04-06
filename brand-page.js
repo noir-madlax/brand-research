@@ -180,14 +180,14 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Count posts per platform:handle key (avoids cross-platform same-name collisions)
-  // key format: "tiktok:ford", "instagram:ford", etc.
+  // Count posts per platform:handle key (lower-cased to avoid case mismatches)
+  // key format: "tiktok:ford", "facebook:fordmexico", etc.
   const acctCount = {};
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => {
       const h = p.account || p.handle || handleFromUrl(p.url);
       if (h && p.platform) {
-        const key = `${p.platform}:${h}`;
+        const key = `${p.platform}:${h.toLowerCase().replace(/\s+/g, '')}`;
         acctCount[key] = (acctCount[key] || 0) + 1;
       }
     });
@@ -216,11 +216,11 @@ function buildSidebarPlatform() {
 
     accounts.forEach(acc => {
       const rawHandle = (acc.handle || '').replace(/^@/, '');
-      // Unique key includes platform to avoid collision (e.g. tiktok:ford vs instagram:ford)
-      const acctKey = `${plat}:${rawHandle}`;
+      // Key is lower-cased & space-stripped to match URL-extracted handles
+      const acctKey = `${plat}:${rawHandle.toLowerCase().replace(/\s+/g, '')}`;
       const isAccActive = selectedAccount === acctKey;
       const accCnt = acctCount[acctKey] || 0;
-      html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')">
+      html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')" title="${rawHandle}">
         <span class="sp-label-row sp-account-label">
           <span class="sp-indent"></span>
           ${acc.handle}
@@ -358,7 +358,7 @@ function toggleYear(y) {
   applyFilters();
 }
 
-/* ══════════════════════════════════════════
+/* ═════════════════════════��════════════════
    initUI
 ══════════════════════════════════════════ */
 function initUI() {
@@ -436,9 +436,15 @@ function renderFilterTags() {
   if (selectedAccount) {
     let acctLabel;
     if (selectedAccount.includes(':')) {
-      const [plat, handle] = selectedAccount.split(':');
+      const [plat, slug] = selectedAccount.split(':');
       const platLabel = {tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[plat] || plat;
-      acctLabel = `${platLabel} · @${handle}`;
+      // Find original handle from BRAND_CONFIG for readable display
+      const acc = BRAND_CONFIG.accounts && BRAND_CONFIG.accounts.find(a =>
+        a.platform.toLowerCase() === plat &&
+        (a.handle || '').replace(/^@/, '').toLowerCase().replace(/\s+/g, '') === slug
+      );
+      const displayHandle = acc ? acc.handle : slug;
+      acctLabel = `${platLabel} · ${displayHandle}`;
     } else {
       acctLabel = {tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[selectedAccount] || selectedAccount;
     }
@@ -488,11 +494,12 @@ function applyFilters() {
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
     if (selectedDay && p.date !== selectedDay) return false;
-    // account-level filter (key format: "platform:handle")
+    // account-level filter (key format: "platform:handleslug")
     if (selectedAccount && selectedAccount.includes(':')) {
       const [acctPlat, acctHandle] = selectedAccount.split(':');
       if (p.platform !== acctPlat) return false;
-      const postHandle = p.account || p.handle || handleFromUrl(p.url);
+      const rawPostHandle = p.account || p.handle || handleFromUrl(p.url);
+      const postHandle = rawPostHandle ? rawPostHandle.toLowerCase().replace(/\s+/g, '') : null;
       if (postHandle !== acctHandle) return false;
     }
     return true;
