@@ -346,26 +346,20 @@ fetch('timeline_data.json')
     const posts = data.all_posts || [];
 
     const brands = {
-      Toyota: { class: 'toyota', icon: '丰田', fullName: 'Toyota', tagline: '丰田汽车', page: 'toyota.html', color: '#dc2626', accountCount: 15 },
-      BYD:    { class: 'byd',    icon: 'BYD',  fullName: 'BYD',    tagline: '比亚迪',   page: 'byd.html',    color: '#0891b2', accountCount: 15 },
-      Ford:   { class: 'ford',   icon: 'Ford',  fullName: 'Ford',   tagline: '福特汽车', page: 'ford.html',   color: '#2563eb', accountCount: 15 },
+      Toyota: { class: 'toyota', icon: '丰田', fullName: 'Toyota', tagline: '丰田汽车', page: 'toyota.html', color: '#dc2626' },
+      BYD:    { class: 'byd',    icon: 'BYD',  fullName: 'BYD',    tagline: '比亚迪',   page: 'byd.html',    color: '#0891b2' },
+      Ford:   { class: 'ford',   icon: 'Ford',  fullName: 'Ford',   tagline: '福特汽车', page: 'ford.html',   color: '#2563eb' },
     };
 
-    // Compute per-brand stats
-    // Extract @handle from URL, e.g. https://www.tiktok.com/@byd_global/video/...
-    const handleFromUrl = url => {
-      if (!url) return null;
-      const m = url.match(/@([\w.]+)/);
-      return m ? m[1] : null;
-    };
-
+    // Compute per-brand stats using username field from data
     const stats = {};
     posts.forEach(p => {
       if (!stats[p.brand]) stats[p.brand] = { total: 0, platforms: new Set(), accounts: new Set() };
       stats[p.brand].total++;
       if (p.platform) stats[p.brand].platforms.add(p.platform);
-      const handle = p.account || p.handle || handleFromUrl(p.url);
-      if (handle) stats[p.brand].accounts.add(handle);
+      // Use username field directly (available in data)
+      const handle = p.username || p.account_name;
+      if (handle) stats[p.brand].accounts.add(handle.toLowerCase());
     });
 
     const platLabel = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
@@ -374,7 +368,7 @@ fetch('timeline_data.json')
     grid.innerHTML = Object.entries(brands).map(([key, cfg]) => {
       const s = stats[key] || { total: 0, platforms: new Set(), accounts: new Set() };
       const platCount = s.platforms.size;
-      const acctCount = cfg.accountCount;
+      const acctCount = s.accounts.size;
       const platBadges = [...s.platforms].map(p => `<span class="plat-badge">${platLabel[p]||p}</span>`).join('');
 
       return `<a href="${cfg.page}" class="brand-card ${cfg.class}">
