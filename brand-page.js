@@ -112,7 +112,8 @@ function renderAccountMatrix() {
             ? `<a href="${acc.url}" target="_blank" class="matrix-handle">${acc.handle}</a>`
             : `<span class="matrix-handle">${acc.handle}</span>`;
 
-          return `<div class="matrix-account-card">
+          const cardClick = acc.url ? `onclick="window.open('${acc.url.replace(/'/g,"\\'")}','_blank')" style="cursor:pointer"` : '';
+          return `<div class="matrix-account-card" ${cardClick}>
             <div class="matrix-account-top">
               <div class="matrix-plat-icon-sm ${info.cls}">${info.svg}</div>
               ${handleHtml}
@@ -208,6 +209,8 @@ function buildSidebarPlatform() {
       const acctKey = `${plat}:${rawHandle.toLowerCase().replace(/\s+/g, '')}`;
       const isAccActive = selectedAccount === acctKey;
       const accCnt = acctCount[acctKey] || 0;
+      // Skip accounts with 0 content
+      if (accCnt === 0) return;
       html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')" title="${rawHandle}">
         <span class="sp-label-row sp-account-label">
           <span class="sp-indent"></span>
@@ -546,18 +549,33 @@ function updateSidebarCounts() {
 function renderTimeline() {
   const table = document.getElementById('timeline-table');
 
-  const basePosts = allData.all_posts.filter(p => {
+  // Use filteredPosts which already includes account-level filter
+  const basePosts = filteredPosts.filter(p => {
+    // Exclude day filter for heatmap (we want to show full range, not just selected day)
+    if (selectedDay && p.date !== selectedDay) return true; // include all when day is selected
+    return true;
+  });
+  // Actually, just use filteredPosts but without selectedDay constraint
+  const heatmapPosts = allData.all_posts.filter(p => {
     if (!filters.models.has('all')) {
       if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
     }
     if (!filters.platforms.has(p.platform)) return false;
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
+    // account-level filter
+    if (selectedAccount && selectedAccount.includes(':')) {
+      const [acctPlat, acctUsername] = selectedAccount.split(':');
+      if (p.platform !== acctPlat) return false;
+      const postUsername = p.username || p.account_name;
+      const normalizedUsername = postUsername ? postUsername.toLowerCase().replace(/\s+/g, '') : null;
+      if (normalizedUsername !== acctUsername) return false;
+    }
     return true;
   });
 
   const dayData = {};
-  basePosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
+  heatmapPosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
 
   const days = Object.keys(dayData).sort();
   if (!days.length) { table.innerHTML = ''; return; }
