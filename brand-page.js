@@ -112,7 +112,8 @@ function renderAccountMatrix() {
             ? `<a href="${acc.url}" target="_blank" class="matrix-handle">${acc.handle}</a>`
             : `<span class="matrix-handle">${acc.handle}</span>`;
 
-          return `<div class="matrix-account-card">
+          const cardClick = acc.url ? `onclick="window.open('${acc.url.replace(/'/g,"\\'")}','_blank')" style="cursor:pointer"` : '';
+          return `<div class="matrix-account-card" ${cardClick}>
             <div class="matrix-account-top">
               <div class="matrix-plat-icon-sm ${info.cls}">${info.svg}</div>
               ${handleHtml}
@@ -159,25 +160,6 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Helper: extract handle from url
-  // Supports: @handle (TikTok/IG), facebook.com/{slug}/posts/..., facebook.com/{slug}/...
-  const handleFromUrl = url => {
-    if (!url) return null;
-    // TikTok / Instagram: @handle
-    const atMatch = url.match(/@([\w.]+)/);
-    if (atMatch) return atMatch[1];
-    // Facebook: facebook.com/{slug}/...  — exclude known non-page paths
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
-    if (fbMatch) {
-      const slug = fbMatch[1];
-      // Skip paths that are not page slugs
-      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
-        return slug;
-      }
-    }
-    return null;
-  };
-
   // Count posts per platform
   const platCount = {};
   if (allData && allData.all_posts) {
@@ -186,12 +168,13 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Count posts per platform:handle key (lower-cased to avoid case mismatches)
-  // key format: "tiktok:ford", "facebook:fordmexico", etc.
+  // Count posts per platform:username key (using username field from data)
+  // key format: "tiktok:byd_global", "facebook:ford", etc.
   const acctCount = {};
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => {
-      const h = p.account || p.handle || handleFromUrl(p.url);
+      // Use username field directly (already present in data)
+      const h = p.username || p.account_name;
       if (h && p.platform) {
         const key = `${p.platform}:${h.toLowerCase().replace(/\s+/g, '')}`;
         acctCount[key] = (acctCount[key] || 0) + 1;
@@ -226,6 +209,8 @@ function buildSidebarPlatform() {
       const acctKey = `${plat}:${rawHandle.toLowerCase().replace(/\s+/g, '')}`;
       const isAccActive = selectedAccount === acctKey;
       const accCnt = acctCount[acctKey] || 0;
+      // Skip accounts with 0 content
+      if (accCnt === 0) return;
       html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')" title="${rawHandle}">
         <span class="sp-label-row sp-account-label">
           <span class="sp-indent"></span>
@@ -483,20 +468,6 @@ function removeTag(type, value) {
 function applyFilters() {
   if (!allData) return;
 
-  const handleFromUrl = url => {
-    if (!url) return null;
-    const atMatch = url.match(/@([\w.]+)/);
-    if (atMatch) return atMatch[1];
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
-    if (fbMatch) {
-      const slug = fbMatch[1];
-      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
-        return slug;
-      }
-    }
-    return null;
-  };
-
   filteredPosts = allData.all_posts.filter(p => {
     if (!filters.models.has('all')) {
       if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
@@ -505,13 +476,14 @@ function applyFilters() {
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
     if (selectedDay && p.date !== selectedDay) return false;
-    // account-level filter (key format: "platform:handleslug")
+    // account-level filter (key format: "platform:username")
     if (selectedAccount && selectedAccount.includes(':')) {
-      const [acctPlat, acctHandle] = selectedAccount.split(':');
+      const [acctPlat, acctUsername] = selectedAccount.split(':');
       if (p.platform !== acctPlat) return false;
-      const rawPostHandle = p.account || p.handle || handleFromUrl(p.url);
-      const postHandle = rawPostHandle ? rawPostHandle.toLowerCase().replace(/\s+/g, '') : null;
-      if (postHandle !== acctHandle) return false;
+      // Use username field directly from data
+      const postUsername = p.username || p.account_name;
+      const normalizedUsername = postUsername ? postUsername.toLowerCase().replace(/\s+/g, '') : null;
+      if (normalizedUsername !== acctUsername) return false;
     }
     return true;
   });
@@ -534,7 +506,7 @@ function applyFilters() {
   updateSidebarCounts();
 }
 
-/* ══════════════════════════════════════════
+/* ���═════════════════════════════════════════
    Stats
 ══════════════════════════════════════════ */
 function renderStats() {
@@ -577,18 +549,33 @@ function updateSidebarCounts() {
 function renderTimeline() {
   const table = document.getElementById('timeline-table');
 
-  const basePosts = allData.all_posts.filter(p => {
+  // Use filteredPosts which already includes account-level filter
+  const basePosts = filteredPosts.filter(p => {
+    // Exclude day filter for heatmap (we want to show full range, not just selected day)
+    if (selectedDay && p.date !== selectedDay) return true; // include all when day is selected
+    return true;
+  });
+  // Actually, just use filteredPosts but without selectedDay constraint
+  const heatmapPosts = allData.all_posts.filter(p => {
     if (!filters.models.has('all')) {
       if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
     }
     if (!filters.platforms.has(p.platform)) return false;
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
+    // account-level filter
+    if (selectedAccount && selectedAccount.includes(':')) {
+      const [acctPlat, acctUsername] = selectedAccount.split(':');
+      if (p.platform !== acctPlat) return false;
+      const postUsername = p.username || p.account_name;
+      const normalizedUsername = postUsername ? postUsername.toLowerCase().replace(/\s+/g, '') : null;
+      if (normalizedUsername !== acctUsername) return false;
+    }
     return true;
   });
 
   const dayData = {};
-  basePosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
+  heatmapPosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
 
   const days = Object.keys(dayData).sort();
   if (!days.length) { table.innerHTML = ''; return; }
