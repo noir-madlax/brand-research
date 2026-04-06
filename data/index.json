@@ -1,0 +1,16 @@
+{
+  "brands": {
+    "BYD": {
+      "count": 7312,
+      "file": "data/byd.json"
+    },
+    "Ford": {
+      "count": 16040,
+      "file": "data/ford.json"
+    },
+    "Toyota": {
+      "count": 42278,
+      "file": "data/toyota.json"
+    }
+  }
+}
