@@ -21,6 +21,10 @@ let currentPage = 1;
 let perPage = 20;
 let selectedDay = null;
 let heatmapPanelCollapsed = false;
+let matrixPanelCollapsed = false;
+
+// selectedAccount: null = all, 'tiktok' = platform-level, '@handle' = specific account
+let selectedAccount = null;
 
 const filters = {
   models:    new Set(['all']),
@@ -41,8 +45,8 @@ fetch('timeline_data.json')
     allData = {
       all_posts: data.all_posts.filter(p => p.brand === BRAND_CONFIG.brand)
     };
-    renderAccountMatrix();
     initUI();
+    buildSidebarPlatform();
     applyFilters();
     document.getElementById('loading-overlay').style.display = 'none';
   })
@@ -56,7 +60,18 @@ fetch('timeline_data.json')
   });
 
 /* ══════════════════════════════════════════
-   Account Matrix
+   Shared platform icon map
+══════════════════════════════════════════ */
+const PLAT_INFO = {
+  tiktok:    { label: 'TikTok',      cls: 'tt', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 2h2c.5 2 1.8 2.8 3 3v2c-1.2 0-2.3-.4-3-1v5a4 4 0 11-4-4V9a2 2 0 102 2V2z"/></svg>' },
+  instagram: { label: 'Instagram',   cls: 'ig', svg: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><circle cx="8" cy="8" r="2.5"/><circle cx="11.5" cy="4.5" r=".5" fill="currentColor"/></svg>' },
+  facebook:  { label: 'Facebook',    cls: 'fb', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/></svg>' },
+  youtube:   { label: 'YouTube',     cls: 'yt', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 4.5s-.2-1.3-.7-1.8c-.7-.7-1.5-.7-1.9-.8C10.2 2 8 2 8 2s-2.2 0-3.9.2c-.4 0-1.2.1-1.9.8-.5.5-.7 1.8-.7 1.8S1.5 6 1.5 7.5v1.3c0 1.5.2 3 .2 3s.2 1.3.7 1.8c.7.7 1.6.7 2 .8 1.5.1 6.3.2 6.3.2s2.2 0 3.9-.3c.4 0 1.2-.1 1.9-.8.5-.5.7-1.8.7-1.8s.2-1.5.2-3V7.5c0-1.5-.2-3-.2-3zM6.5 10V6l4 2-4 2z"/></svg>' },
+  twitter:   { label: 'X / Twitter', cls: 'tw', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.6 2h2.1L9.9 7.2 15.5 14h-4.2L8 9.8 4.3 14H2.2l5.2-5.6L2 2h4.3l2.9 4 3.4-4zm-.7 10.8h1.1L4.3 3.2H3.1l8.8 9.6z"/></svg>' },
+};
+
+/* ══════════════════════════════════════════
+   Account Matrix (collapsible panel in main)
 ══════════════════════════════════════════ */
 function renderAccountMatrix() {
   const wrap = document.getElementById('account-matrix-grid');
@@ -65,15 +80,6 @@ function renderAccountMatrix() {
     return;
   }
 
-  const platIcon = {
-    tiktok:    { label: 'TikTok',    cls: 'tt', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M9 2h2c.5 2 1.8 2.8 3 3v2c-1.2 0-2.3-.4-3-1v5a4 4 0 11-4-4V9a2 2 0 102 2V2z"/></svg>' },
-    instagram: { label: 'Instagram', cls: 'ig', svg: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><circle cx="8" cy="8" r="2.5"/><circle cx="11.5" cy="4.5" r=".5" fill="currentColor"/></svg>' },
-    facebook:  { label: 'Facebook',  cls: 'fb', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/></svg>' },
-    youtube:   { label: 'YouTube',   cls: 'yt', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 4.5s-.2-1.3-.7-1.8c-.7-.7-1.5-.7-1.9-.8C10.2 2 8 2 8 2s-2.2 0-3.9.2c-.4 0-1.2.1-1.9.8-.5.5-.7 1.8-.7 1.8S1.5 6 1.5 7.5v1.3c0 1.5.2 3 .2 3s.2 1.3.7 1.8c.7.7 1.6.7 2 .8 1.5.1 6.3.2 6.3.2s2.2 0 3.9-.3c.4 0 1.2-.1 1.9-.8.5-.5.7-1.8.7-1.8s.2-1.5.2-3V7.5c0-1.5-.2-3-.2-3zM6.5 10V6l4 2-4 2z"/></svg>' },
-    twitter:   { label: 'X / Twitter', cls: 'tw', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.6 2h2.1L9.9 7.2 15.5 14h-4.2L8 9.8 4.3 14H2.2l5.2-5.6L2 2h4.3l2.9 4 3.4-4zm-.7 10.8h1.1L4.3 3.2H3.1l8.8 9.6z"/></svg>' },
-  };
-
-  // Group accounts by platform
   const grouped = {};
   BRAND_CONFIG.accounts.forEach(acc => {
     const p = acc.platform.toLowerCase();
@@ -85,7 +91,7 @@ function renderAccountMatrix() {
   const rows = platOrder.filter(p => grouped[p]);
 
   wrap.innerHTML = rows.map(plat => {
-    const info = platIcon[plat] || { label: plat, cls: 'tt', svg: '' };
+    const info = PLAT_INFO[plat] || { label: plat, cls: 'tt', svg: '' };
     const accounts = grouped[plat];
 
     return `<div class="matrix-platform-row">
@@ -119,6 +125,122 @@ function renderAccountMatrix() {
       </div>
     </div>`;
   }).join('');
+}
+
+function toggleMatrixPanel() {
+  matrixPanelCollapsed = !matrixPanelCollapsed;
+  document.getElementById('matrix-panel').classList.toggle('collapsed', matrixPanelCollapsed);
+  document.getElementById('matrix-panel-toggle').classList.toggle('collapsed', matrixPanelCollapsed);
+}
+
+/* ══════════════════════════════════════════
+   Sidebar platform tree (replaces old platform chips + sidebar-counts)
+══════════════════════════════════════════ */
+function buildSidebarPlatform() {
+  renderAccountMatrix();
+  const wrap = document.getElementById('sidebar-platform-tree');
+  if (!wrap) return;
+
+  // Collect platforms from data
+  const platSet = new Set();
+  if (allData && allData.all_posts) {
+    allData.all_posts.forEach(p => { if (p.platform) platSet.add(p.platform.toLowerCase()); });
+  }
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'youtube', 'twitter'];
+  const platforms = platOrder.filter(p => platSet.has(p));
+
+  // Group accounts by platform from BRAND_CONFIG
+  const grouped = {};
+  if (BRAND_CONFIG.accounts) {
+    BRAND_CONFIG.accounts.forEach(acc => {
+      const p = acc.platform.toLowerCase();
+      if (!grouped[p]) grouped[p] = [];
+      grouped[p].push(acc);
+    });
+  }
+
+  // Helper: extract handle from url
+  const handleFromUrl = url => {
+    if (!url) return null;
+    const m = url.match(/@([\w.]+)/);
+    return m ? m[1] : null;
+  };
+
+  // Count posts per platform
+  const platCount = {};
+  if (allData && allData.all_posts) {
+    allData.all_posts.forEach(p => {
+      if (p.platform) platCount[p.platform] = (platCount[p.platform] || 0) + 1;
+    });
+  }
+
+  // Count posts per account handle
+  const acctCount = {};
+  if (allData && allData.all_posts) {
+    allData.all_posts.forEach(p => {
+      const h = p.account || p.handle || handleFromUrl(p.url);
+      if (h) acctCount[h] = (acctCount[h] || 0) + 1;
+    });
+  }
+
+  const totalAll = allData ? allData.all_posts.length : 0;
+
+  let html = `<div class="sp-item sp-all ${!selectedAccount ? 'active' : ''}" onclick="selectAccount(null)">
+    <span class="sp-label-row">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-6 3 4 2-3 3 5"/></svg>
+      全部内容
+    </span>
+    <span class="sp-num" id="sp-all-num">${totalAll.toLocaleString()}</span>
+  </div>`;
+
+  platforms.forEach(plat => {
+    const info = PLAT_INFO[plat] || { label: plat, cls: 'tt', svg: '' };
+    const accounts = grouped[plat] || [];
+    const isActive = selectedAccount === plat;
+    const cnt = platCount[plat] || 0;
+
+    html += `<div class="sp-item sp-platform ${isActive ? 'active' : ''}" data-plat="${plat}" onclick="selectAccount('${plat}')">
+      <span class="sp-label-row">
+        <span class="matrix-plat-icon-sm ${info.cls}">${info.svg}</span>
+        ${info.label}
+      </span>
+      <span class="sp-num sp-plat-num" id="sp-num-${plat}">${cnt.toLocaleString()}</span>
+    </div>`;
+
+    accounts.forEach(acc => {
+      const rawHandle = (acc.handle || '').replace(/^@/, '');
+      const isAccActive = selectedAccount === '@' + rawHandle;
+      const accCnt = acctCount[rawHandle] || 0;
+      html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-handle="${rawHandle}" onclick="selectAccount('@${rawHandle}')">
+        <span class="sp-label-row sp-account-label">
+          <span class="sp-indent"></span>
+          ${acc.handle}
+        </span>
+        <span class="sp-num sp-acct-num" id="sp-num-acct-${rawHandle}">${accCnt.toLocaleString()}</span>
+      </div>`;
+    });
+  });
+
+  wrap.innerHTML = html;
+}
+
+function selectAccount(val) {
+  selectedAccount = val;
+  // Sync platform filter set with the selection
+  if (!val) {
+    filters.platforms = new Set(['tiktok', 'instagram', 'facebook']);
+  } else if (!val.startsWith('@')) {
+    // platform-level: only this platform
+    filters.platforms = new Set([val]);
+  } else {
+    // account-level: enable only that platform
+    // platform is derived from BRAND_CONFIG.accounts
+    const rawHandle = val.slice(1);
+    const acc = BRAND_CONFIG.accounts && BRAND_CONFIG.accounts.find(a => (a.handle || '').replace(/^@/,'') === rawHandle);
+    if (acc) filters.platforms = new Set([acc.platform.toLowerCase()]);
+  }
+  applyFilters();
+  buildSidebarPlatform();
 }
 
 /* ══════════════════════════════════════════
@@ -233,19 +355,6 @@ function initUI() {
   buildYearChips();
   updateModelOptions();
 
-  document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.dataset.value;
-      if (val === 'all') {
-        filters.platforms = filters.platforms.size === 3 ? new Set() : new Set(['tiktok','instagram','facebook']);
-      } else {
-        filters.platforms.has(val) ? filters.platforms.delete(val) : filters.platforms.add(val);
-      }
-      updatePlatformChips();
-      applyFilters();
-    });
-  });
-
   document.getElementById('model-filter-buttons').addEventListener('click', e => {
     const btn = e.target.closest('[data-filter="model"]');
     if (!btn) return;
@@ -314,7 +423,10 @@ function updateModelOptions() {
 function renderFilterTags() {
   const tags = [];
   if (!filters.models.has('all'))    Array.from(filters.models).forEach(v => tags.push({type:'model',value:v,label:v}));
-  if (filters.platforms.size !== 3)  Array.from(filters.platforms).forEach(v => tags.push({type:'platform',value:v,label:{tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'}[v]}));
+  if (selectedAccount) {
+    const acctLabel = selectedAccount.startsWith('@') ? selectedAccount : ({tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',twitter:'X/Twitter'}[selectedAccount] || selectedAccount);
+    tags.push({type:'account', value: selectedAccount, label: acctLabel});
+  }
   if (filters.dateFrom || filters.dateTo) tags.push({type:'date',value:'date',label:`${filters.dateFrom||'—'} ~ ${filters.dateTo||'—'}`});
   if (selectedDay) tags.push({type:'day',value:selectedDay,label:`逐月: ${selectedDay}`});
 
@@ -329,10 +441,10 @@ function renderFilterTags() {
 }
 
 function removeTag(type, value) {
-  if (type === 'model')    { filters.models.delete(value); if (!filters.models.size) filters.models.add('all'); updateModelChips(); }
-  if (type === 'platform') { filters.platforms.delete(value); updatePlatformChips(); }
-  if (type === 'date')     { selectPreset('all'); return; }
-  if (type === 'day')      { clearDayFilter(); return; }
+  if (type === 'model')   { filters.models.delete(value); if (!filters.models.size) filters.models.add('all'); updateModelChips(); }
+  if (type === 'account') { selectAccount(null); return; }
+  if (type === 'date')    { selectPreset('all'); return; }
+  if (type === 'day')     { clearDayFilter(); return; }
   applyFilters();
 }
 
@@ -342,6 +454,12 @@ function removeTag(type, value) {
 function applyFilters() {
   if (!allData) return;
 
+  const handleFromUrl = url => {
+    if (!url) return null;
+    const m = url.match(/@([\w.]+)/);
+    return m ? m[1] : null;
+  };
+
   filteredPosts = allData.all_posts.filter(p => {
     if (!filters.models.has('all')) {
       if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
@@ -350,6 +468,12 @@ function applyFilters() {
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
     if (selectedDay && p.date !== selectedDay) return false;
+    // account-level filter
+    if (selectedAccount && selectedAccount.startsWith('@')) {
+      const rawHandle = selectedAccount.slice(1);
+      const postHandle = p.account || p.handle || handleFromUrl(p.url);
+      if (postHandle !== rawHandle) return false;
+    }
     return true;
   });
 
@@ -394,19 +518,18 @@ function renderStats() {
 
 function togglePlatform(plat) {
   if (plat === 'all') {
-    filters.platforms = filters.platforms.size===3 ? new Set() : new Set(['tiktok','instagram','facebook']);
+    selectedAccount = null;
+    filters.platforms = new Set(['tiktok','instagram','facebook']);
   } else {
-    filters.platforms.has(plat) ? filters.platforms.delete(plat) : filters.platforms.add(plat);
+    selectedAccount = plat;
+    filters.platforms = new Set([plat]);
   }
-  updatePlatformChips();
+  buildSidebarPlatform();
   applyFilters();
 }
 
 function updateSidebarCounts() {
-  document.getElementById('sidebar-total-num').textContent  = filteredPosts.length.toLocaleString();
-  document.getElementById('sidebar-tiktok-num').textContent = filteredPosts.filter(p=>p.platform==='tiktok').length.toLocaleString();
-  document.getElementById('sidebar-ig-num').textContent     = filteredPosts.filter(p=>p.platform==='instagram').length.toLocaleString();
-  document.getElementById('sidebar-fb-num').textContent     = filteredPosts.filter(p=>p.platform==='facebook').length.toLocaleString();
+  // Counts are now rendered inline by buildSidebarPlatform; nothing to do here.
 }
 
 /* ══════════════════════════════════════════
