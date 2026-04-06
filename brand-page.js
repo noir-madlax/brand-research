@@ -160,10 +160,16 @@ function buildSidebarPlatform() {
   }
 
   // Helper: extract handle from url
+  // Supports: @handle (TikTok/IG), facebook.com/{slug}/posts/..., facebook.com/{slug}/videos/...
   const handleFromUrl = url => {
     if (!url) return null;
-    const m = url.match(/@([\w.]+)/);
-    return m ? m[1] : null;
+    // TikTok / Instagram: @handle
+    const atMatch = url.match(/@([\w.]+)/);
+    if (atMatch) return atMatch[1];
+    // Facebook: facebook.com/{slug}/posts|videos|reels|...
+    const fbMatch = url.match(/facebook\.com\/([\w.]+)\/(posts|videos|photos|reels)/);
+    if (fbMatch) return fbMatch[1];
+    return null;
   };
 
   // Count posts per platform
@@ -186,10 +192,7 @@ function buildSidebarPlatform() {
   const totalAll = allData ? allData.all_posts.length : 0;
 
   let html = `<div class="sp-item sp-all ${!selectedAccount ? 'active' : ''}" onclick="selectAccount(null)">
-    <span class="sp-label-row">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-6 3 4 2-3 3 5"/></svg>
-      全部内容
-    </span>
+    <span class="sp-label-row">全部内容</span>
     <span class="sp-num" id="sp-all-num">${totalAll.toLocaleString()}</span>
   </div>`;
 
@@ -456,8 +459,11 @@ function applyFilters() {
 
   const handleFromUrl = url => {
     if (!url) return null;
-    const m = url.match(/@([\w.]+)/);
-    return m ? m[1] : null;
+    const atMatch = url.match(/@([\w.]+)/);
+    if (atMatch) return atMatch[1];
+    const fbMatch = url.match(/facebook\.com\/([\w.]+)\/(posts|videos|photos|reels)/);
+    if (fbMatch) return fbMatch[1];
+    return null;
   };
 
   filteredPosts = allData.all_posts.filter(p => {
@@ -534,7 +540,7 @@ function updateSidebarCounts() {
 
 /* ══════════════════════════════════════════
    Timeline heatmap
-══════════════════════════════════════════ */
+═══════════════════════════��══════════════ */
 function renderTimeline() {
   const table = document.getElementById('timeline-table');
 
