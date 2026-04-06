@@ -3,34 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>品牌社媒内容研究平台</title>
+<title>品牌社交矩阵分析</title>
 <style>
-/* ── Design Tokens ── */
 :root {
   --bg:         #f5f7fa;
   --surface:    #ffffff;
-  --card:       #ffffff;
-  --card-alt:   #f8fafc;
   --border:     #e5e9ef;
-  --border-hi:  rgba(37,99,235,.3);
-
   --text:       #111827;
   --text-sub:   #6b7280;
   --text-dim:   #9ca3af;
-
   --blue:       #2563eb;
   --blue-light: #3b82f6;
   --blue-dim:   rgba(37,99,235,.06);
   --blue-mid:   rgba(37,99,235,.15);
-
   --byd:        #0891b2;
   --byd-dim:    rgba(8,145,178,.08);
+  --byd-mid:    rgba(8,145,178,.2);
   --ford:       #2563eb;
   --ford-dim:   rgba(37,99,235,.08);
+  --ford-mid:   rgba(37,99,235,.2);
   --toyota:     #dc2626;
   --toyota-dim: rgba(220,38,38,.08);
-
-  --sidebar-w:  260px;
+  --toyota-mid: rgba(220,38,38,.2);
   --radius:     6px;
   --radius-lg:  10px;
 }
@@ -43,1276 +37,343 @@ body {
   font-size: 13px;
   line-height: 1.5;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
 /* ── Topbar ── */
 .topbar {
-  position: sticky; top: 0; z-index: 100;
   background: #fff;
   border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  display: flex; align-items: center; gap: 20px; height: 50px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 50px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  flex-shrink: 0;
 }
 .topbar-logo {
   display: flex; align-items: center; gap: 8px;
   font-size: 14px; font-weight: 700; letter-spacing: -.3px;
-  color: var(--text); text-decoration: none; flex-shrink: 0;
+  color: var(--text); text-decoration: none;
 }
 .topbar-logo .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
 .topbar-divider { width: 1px; height: 18px; background: var(--border); }
-.topbar-sub { font-size: 12px; color: var(--text-sub); flex: 1; }
-.topbar-badges { display: flex; gap: 5px; align-items: center; }
-.brand-badge {
-  padding: 2px 8px; border-radius: 4px;
-  font-size: 11px; font-weight: 700;
-}
-.brand-badge.byd    { background: var(--byd-dim);    color: var(--byd);    border: 1px solid rgba(8,145,178,.2); }
-.brand-badge.ford   { background: var(--ford-dim);   color: var(--ford);   border: 1px solid rgba(37,99,235,.2); }
-.brand-badge.toyota { background: var(--toyota-dim); color: var(--toyota); border: 1px solid rgba(220,38,38,.2); }
+.topbar-sub { font-size: 12px; color: var(--text-sub); }
 
-/* ── Layout ── */
-.app-layout { display: flex; min-height: calc(100vh - 50px); }
-
-/* ── Left Sidebar (filters) ── */
-.sidebar {
-  width: var(--sidebar-w); flex-shrink: 0;
-  background: #fff;
-  border-right: 1px solid var(--border);
-  position: sticky; top: 50px; height: calc(100vh - 50px); overflow-y: auto;
-  padding: 16px 0 32px;
-}
-.sidebar-section { margin-bottom: 6px; }
-.sidebar-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  color: var(--text-dim); text-transform: uppercase;
-  padding: 0 14px 6px; display: block;
+/* ── Main content ── */
+.home-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
 }
 
-/* Filter chips inside sidebar */
-.sf-group { padding: 0 12px 14px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
-.sf-label {
-  font-size: 10px; font-weight: 700; letter-spacing: .8px;
-  color: var(--text-dim); text-transform: uppercase;
-  margin-bottom: 7px; display: block;
+.home-header {
+  text-align: center;
+  margin-bottom: 52px;
 }
-.sf-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.chip {
-  padding: 3px 9px; border-radius: 100px;
+.home-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.home-eyebrow::before,
+.home-eyebrow::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--blue-mid);
+}
+.home-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.6px;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.home-desc {
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.6;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+/* ── Brand cards grid ── */
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.brand-card {
+  background: var(--surface);
   border: 1px solid var(--border);
-  background: transparent; color: var(--text-sub);
-  font-size: 11.5px; font-weight: 600; cursor: pointer;
-  transition: all .15s; white-space: nowrap;
-}
-.chip:hover { border-color: #d1d5db; color: var(--text); }
-.chip.active { border-color: var(--blue-mid); background: var(--blue-dim); color: var(--blue); }
-.chip.active.byd    { border-color: rgba(8,145,178,.25);  background: var(--byd-dim);   color: var(--byd); }
-.chip.active.ford   { border-color: rgba(37,99,235,.25);  background: var(--ford-dim);  color: var(--ford); }
-.chip.active.toyota { border-color: rgba(220,38,38,.25);  background: var(--toyota-dim);color: var(--toyota); }
-
-/* Date section in sidebar */
-.sf-date-section { padding: 10px 12px 14px; border-bottom: 1px solid var(--border); }
-.sf-date-label { font-size: 10px; font-weight: 700; letter-spacing: .8px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; display: block; }
-.sf-year-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
-.sf-divider-text { font-size: 10px; color: var(--text-dim); margin: 6px 0 8px; text-align: center; position: relative; }
-.sf-divider-text::before, .sf-divider-text::after {
-  content: ''; position: absolute; top: 50%; width: 30%; height: 1px; background: var(--border);
-}
-.sf-divider-text::before { left: 0; }
-.sf-divider-text::after  { right: 0; }
-.sf-quick-items { display: flex; flex-direction: column; gap: 1px; }
-.sf-quick-item {
-  padding: 6px 8px; border-radius: var(--radius);
-  font-size: 12px; color: var(--text-sub); cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.sf-quick-item:hover { background: var(--bg); color: var(--text); }
-.sf-quick-item.active { background: var(--blue-dim); color: var(--blue); font-weight: 600; }
-.sf-custom-section { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
-.sf-custom-row { display: flex; align-items: center; gap: 6px; }
-.sf-custom-lbl { font-size: 11px; color: var(--text-sub); width: 20px; }
-.date-input {
-  flex: 1; padding: 5px 7px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--card-alt); color: var(--text);
-  font-size: 12px; outline: none; transition: border-color .15s;
-}
-.date-input:focus { border-color: var(--blue-mid); }
-.sf-btn-row { display: flex; gap: 5px; margin-top: 4px; }
-.btn-apply {
-  flex: 1; padding: 5px 0;
-  border: 1px solid var(--blue); border-radius: var(--radius);
-  background: var(--blue); color: #fff;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-}
-.btn-apply:hover { background: #1d4ed8; }
-.btn-reset {
-  padding: 5px 10px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: transparent; color: var(--text-sub);
-  font-size: 12px; cursor: pointer;
-}
-.btn-reset:hover { color: var(--text); }
-
-/* Sidebar platform counts */
-.sidebar-counts { padding: 12px 0 0; }
-.sidebar-count-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 14px; font-size: 12px; color: var(--text-sub);
-  cursor: pointer; transition: all .15s;
-  border-left: 2px solid transparent;
-}
-.sidebar-count-item:hover { color: var(--text); background: var(--bg); }
-.sidebar-count-item.active { color: var(--blue); background: var(--blue-dim); border-left-color: var(--blue); }
-.sidebar-count-item .icon { width: 13px; height: 13px; flex-shrink: 0; opacity: .6; }
-.sidebar-count-num { font-size: 11px; font-weight: 700; color: var(--text-dim); }
-
-/* ── Main ── */
-.main-wrap { flex: 1; min-width: 0; }
-.main { padding: 18px 20px; }
-
-/* Heatmap panel collapsible */
-.heatmap-panel-body { padding: 14px 16px 12px; }
-.panel.collapsed .heatmap-panel-body { display: none; }
-.panel-toggle { font-size: 13px; color: var(--text-dim); transition: transform .2s; line-height: 1; cursor: pointer; }
-.panel-toggle.collapsed { transform: rotate(-90deg); }
-
-/* Heatmap */
-.heatmap-range-label { font-size: 10px; color: var(--text-dim); margin-bottom: 8px; }
-.heatmap-wrap { overflow-x: hidden; }
-.heatmap-table {
-  width: 100%; border-collapse: separate; border-spacing: 2px; font-size: 10px;
-  table-layout: fixed;
-}
-.heatmap-table th {
-  padding: 2px 1px; text-align: center;
-  color: var(--text-dim); font-weight: 600; font-size: 9.5px;
-  background: transparent; border-bottom: 1px solid var(--border);
-  overflow: hidden; white-space: nowrap;
-}
-.heatmap-table th:first-child { width: 30px; text-align: left; }
-.heatmap-table td {
-  padding: 4px 1px; text-align: center;
-  color: var(--text-dim); font-size: 9.5px;
-  transition: all .15s; border-radius: 3px;
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 24px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  position: relative;
   overflow: hidden;
 }
-.heatmap-table td.has-data { cursor: pointer; font-weight: 700; color: #374151; }
-.heatmap-table td.has-data:hover { background: var(--blue-dim) !important; color: var(--blue); }
-.heatmap-table td.day-selected { background: var(--blue) !important; color: #fff !important; }
-.heatmap-table td.day-dimmed { opacity: .2; }
-.heat-1 { background: rgba(37,99,235,.07); }
-.heat-2 { background: rgba(37,99,235,.15); }
-.heat-3 { background: rgba(37,99,235,.26); }
-.heat-4 { background: rgba(37,99,235,.38); }
-.heat-5 { background: rgba(37,99,235,.52); }
-.heatmap-day-hint {
-  font-size: 10.5px; color: var(--blue);
-  padding: 0 0 8px;
-  display: flex; align-items: center; justify-content: space-between;
+.brand-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  transition: opacity .2s;
+  opacity: .7;
 }
-.heatmap-day-hint .clear-btn {
-  background: none; border: 1px solid var(--blue-mid);
-  border-radius: 4px; color: var(--blue); font-size: 10px;
-  padding: 1px 7px; cursor: pointer;
-}
-.heatmap-day-hint .clear-btn:hover { background: var(--blue-dim); }
-.heatmap-legend { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
-.heatmap-legend-label { font-size: 9.5px; color: var(--text-dim); }
-.heatmap-legend-squares { display: flex; gap: 2px; }
-.heatmap-legend-sq { width: 10px; height: 10px; border-radius: 2px; }
+.brand-card.toyota::before { background: var(--toyota); }
+.brand-card.byd::before    { background: var(--byd); }
+.brand-card.ford::before   { background: var(--ford); }
 
-/* ── Active filter tags ── */
-.filter-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
-.filter-tag {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: 100px;
-  background: var(--blue-dim); border: 1px solid var(--blue-mid);
-  color: var(--blue); font-size: 11px;
+.brand-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  transform: translateY(-2px);
 }
-.filter-tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; opacity: .6; }
-.filter-tag button:hover { opacity: 1; }
+.brand-card.toyota:hover { border-color: var(--toyota-mid); }
+.brand-card.byd:hover    { border-color: var(--byd-mid); }
+.brand-card.ford:hover   { border-color: var(--ford-mid); }
 
-/* ── Stats row ── */
-.stats-row {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-  margin-bottom: 14px;
-}
-.stat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 12px 14px;
-  cursor: pointer; transition: all .15s;
-  display: flex; flex-direction: column; gap: 5px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.03);
-}
-.stat-card:hover { border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
-.stat-card.active { border-color: var(--blue-mid); background: var(--blue-dim); }
-.stat-card-label { font-size: 10.5px; font-weight: 600; color: var(--text-dim); }
-.stat-card-value { font-size: 24px; font-weight: 800; color: var(--blue); letter-spacing: -1px; line-height: 1; }
-.stat-card.active.platform-ig .stat-card-value { color: #be185d; }
-.stat-card.active.platform-fb .stat-card-value { color: var(--ford); }
+.brand-card:hover::before { opacity: 1; }
 
-/* ── Panel ── */
-.panel {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  margin-bottom: 14px; overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-}
-.panel.no-margin { margin-bottom: 0; }
-.panel-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 16px; border-bottom: 1px solid var(--border);
-  background: #fafbfc;
-}
-.panel-title {
-  font-size: 12px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 7px;
-}
-.panel-title .accent-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
-
-/* ── Sales stages ── */
-.stage-tabs {
-  display: flex; gap: 0; overflow-x: auto;
-  border-bottom: 1px solid var(--border); padding: 0 16px;
-}
-.stage-tab-btn {
-  flex-shrink: 0; padding: 10px 14px;
-  background: none; border: none; border-bottom: 2px solid transparent;
-  color: var(--text-sub); font-size: 12px; font-weight: 600;
-  cursor: pointer; transition: all .15s;
-  margin-bottom: -1px; white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
-}
-.stage-tab-btn:hover { color: var(--text); }
-.stage-tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
-.stage-tab-btn .stage-count {
-  font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 3px;
-  background: var(--bg); color: var(--text-dim);
-}
-.stage-tab-btn.active .stage-count { background: var(--blue-dim); color: var(--blue); }
-.stage-tab-summary { font-size: 11px; color: var(--text-dim); display: flex; gap: 12px; }
-.stage-tab-summary span { display: flex; align-items: center; gap: 3px; }
-.stage-tab-summary .sum-val { font-weight: 700; color: var(--text-sub); }
-.stage-panel { display: none; }
-.stage-panel.active { display: block; }
-.stage-posts-scroll {
-  max-height: 380px; overflow-y: auto;
-  padding: 12px 16px; display: flex; flex-direction: column; gap: 5px;
-}
-.stage-panel-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 16px; border-bottom: 1px solid var(--border); background: #fafbfc;
+.brand-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* ── Content toolbar ── */
-.content-toolbar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
+.brand-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.content-toolbar-left {
-  font-size: 12.5px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 7px;
-}
-.count-badge {
-  padding: 2px 7px; border-radius: 4px;
-  background: var(--blue-dim); color: var(--blue);
-  font-size: 11px; font-weight: 700; border: 1px solid var(--blue-mid);
-}
-.sort-row { display: flex; gap: 4px; }
-.sort-btn {
-  padding: 4px 10px; border-radius: var(--radius);
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text-sub); font-size: 11.5px; cursor: pointer; transition: all .15s;
-}
-.sort-btn:hover { color: var(--text); border-color: #d1d5db; }
-.sort-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-/* ── Post card ── */
-.post-list { display: flex; flex-direction: column; gap: 5px; }
-.post-card {
-  background: var(--card-alt); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 11px 14px;
-  cursor: pointer; transition: all .15s;
-  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;
-}
-.post-card:hover { border-color: #d1d5db; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-.post-card:hover .post-title { color: var(--blue); }
-.post-card-left { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 2px; }
-.platform-icon {
-  width: 26px; height: 26px; border-radius: 5px;
+.brand-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  font-size: 12px; font-weight: 800; letter-spacing: -.5px;
+  flex-shrink: 0;
 }
-.platform-icon.tt { background: #f3f4f6; color: #374151; }
-.platform-icon.ig { background: rgba(190,24,93,.08); color: #be185d; }
-.platform-icon.fb { background: var(--ford-dim); color: var(--ford); }
-.post-card-body { min-width: 0; }
-.post-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
-.post-date { font-size: 11px; color: var(--text-dim); }
-.post-brand { font-size: 11px; font-weight: 700; }
-.post-brand.byd    { color: var(--byd); }
-.post-brand.ford   { color: var(--ford); }
-.post-brand.toyota { color: var(--toyota); }
-.ct-tag { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: .2px; }
-.model-tag { padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue-mid); }
-.post-title { font-size: 12.5px; color: var(--text); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color .15s; }
-.post-card-right { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; flex-shrink: 0; padding-top: 2px; }
-.post-stat { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-sub); }
-.post-stat .val { font-weight: 700; color: var(--text); }
-.post-stat .ico { color: var(--text-dim); font-size: 10.5px; }
+.brand-card.toyota .brand-icon { background: var(--toyota-dim); color: var(--toyota); border: 1px solid var(--toyota-mid); }
+.brand-card.byd    .brand-icon { background: var(--byd-dim);    color: var(--byd);    border: 1px solid var(--byd-mid); }
+.brand-card.ford   .brand-icon { background: var(--ford-dim);   color: var(--ford);   border: 1px solid var(--ford-mid); }
 
-/* ── Pagination + per-page ── */
-.pagination-row {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-top: 14px; flex-wrap: wrap; gap: 8px;
+.brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+  color: var(--text);
 }
-.pagination { display: flex; gap: 4px; flex-wrap: wrap; }
-.page-btn {
-  min-width: 30px; height: 30px; padding: 0 7px;
-  border: 1px solid var(--border); border-radius: var(--radius);
-  background: var(--card); color: var(--text-sub);
-  font-size: 12px; cursor: pointer; transition: all .15s;
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 1px;
 }
-.page-btn:hover { color: var(--text); border-color: #d1d5db; }
-.page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
-.page-btn:disabled { opacity: .3; cursor: not-allowed; }
-.per-page-row { display: flex; align-items: center; gap: 6px; }
-.per-page-label { font-size: 11.5px; color: var(--text-dim); }
-.per-page-btn {
-  padding: 4px 10px; border-radius: var(--radius);
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text-sub); font-size: 11.5px; cursor: pointer; transition: all .15s;
-}
-.per-page-btn:hover { color: var(--text); border-color: #d1d5db; }
-.per-page-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-/* ── Loading ── */
-.loading-overlay {
-  position: fixed; inset: 0;
-  background: rgba(245,247,250,.96);
+.brand-arrow {
+  width: 26px; height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
+  color: var(--text-dim);
+  transition: all .2s;
+  flex-shrink: 0;
 }
-.loading-box { text-align: center; }
-.loading-spinner {
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 2px solid var(--border); border-top-color: var(--blue);
-  animation: spin .8s linear infinite; margin: 0 auto 14px;
+.brand-card:hover .brand-arrow {
+  color: var(--text);
+  border-color: #d1d5db;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-size: 13px; color: var(--text-sub); }
+.brand-card.toyota:hover .brand-arrow { color: var(--toyota); border-color: var(--toyota-mid); background: var(--toyota-dim); }
+.brand-card.byd:hover    .brand-arrow { color: var(--byd);    border-color: var(--byd-mid);    background: var(--byd-dim); }
+.brand-card.ford:hover   .brand-arrow { color: var(--ford);   border-color: var(--ford-mid);   background: var(--ford-dim); }
 
-/* ── Utilities ── */
-.hidden { display: none !important; }
-.ct-Product     { background: rgba(37,99,235,.07);   color: #2563eb; }
-.ct-Campaign    { background: rgba(236,72,153,.07);  color: #db2777; }
-.ct-TechSafety  { background: rgba(5,150,105,.07);   color: #059669; }
-.ct-Brand       { background: rgba(124,58,237,.07);  color: #7c3aed; }
-.ct-OwnerUGC    { background: rgba(217,119,6,.07);   color: #d97706; }
-.ct-Lifestyle   { background: rgba(8,145,178,.07);   color: #0891b2; }
-.ct-Guide       { background: rgba(234,88,12,.07);   color: #ea580c; }
-.ct-Milestone   { background: rgba(168,85,247,.07);  color: #a855f7; }
-.ct-Service     { background: rgba(16,185,129,.07);  color: #10b981; }
-.ct-Creative    { background: rgba(239,68,68,.07);   color: #ef4444; }
-.ct-Other       { background: rgba(107,114,128,.07); color: #6b7280; }
+.brand-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.brand-stat-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+.brand-stat-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.brand-stat-value {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  line-height: 1;
+}
+.brand-card.toyota .brand-stat-value { color: var(--toyota); }
+.brand-card.byd    .brand-stat-value { color: var(--byd); }
+.brand-card.ford   .brand-stat-value { color: var(--ford); }
+
+.brand-platforms {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.plat-badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+}
+
+/* ── Footer note ── */
+.home-footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+.home-footer .dot-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
 </style>
 </head>
 <body>
 
-<!-- Loading -->
-<div class="loading-overlay" id="loading-overlay">
-  <div class="loading-box">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">正在加载社媒内容数据</div>
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <div class="dot"></div>
+    Brand Research
+  </a>
+  <div class="topbar-divider"></div>
+  <span class="topbar-sub">品牌社交矩阵分析平台</span>
+</header>
+
+<div class="home-wrap">
+  <div class="home-header">
+    <div class="home-eyebrow">Brand Social Matrix</div>
+    <h1 class="home-title">品牌社交矩阵分析</h1>
+    <p class="home-desc">选择一个品牌，查看其跨平台社交媒体账号矩阵与内容发布数据分析。</p>
+  </div>
+
+  <div class="brand-grid" id="brand-grid">
+    <!-- Cards injected by JS after data loads -->
+  </div>
+
+  <div class="home-footer">
+    <span>数据来源：TikTok · Instagram · Facebook</span>
+    <span class="dot-sep"></span>
+    <span id="footer-range">加载中...</span>
   </div>
 </div>
 
-<!-- Topbar -->
-<header class="topbar">
-  <div class="topbar-logo">
-    <div class="dot"></div>
-    Brand Research
-  </div>
-  <div class="topbar-divider"></div>
-  <div class="topbar-sub">BYD · Ford · Toyota 社交媒体内容聚合分析</div>
-  <div class="topbar-badges">
-    <span class="brand-badge byd">BYD</span>
-    <span class="brand-badge ford">Ford</span>
-    <span class="brand-badge toyota">Toyota</span>
-  </div>
-</header>
-
-<!-- App layout -->
-<div class="app-layout">
-
-  <!-- Left sidebar: all filters -->
-  <nav class="sidebar">
-
-    <!-- Brand -->
-    <div class="sf-group">
-      <span class="sf-label">品牌</span>
-      <div class="sf-chips">
-        <button class="chip active" data-filter="brand" data-value="all">全部</button>
-        <button class="chip active byd"    data-filter="brand" data-value="BYD">BYD</button>
-        <button class="chip active ford"   data-filter="brand" data-value="Ford">Ford</button>
-        <button class="chip active toyota" data-filter="brand" data-value="Toyota">Toyota</button>
-      </div>
-    </div>
-
-    <!-- Model -->
-    <div class="sf-group">
-      <span class="sf-label">车型</span>
-      <div class="sf-chips" id="model-filter-buttons">
-        <button class="chip active" data-filter="model" data-value="all">全部</button>
-      </div>
-    </div>
-
-    <!-- Platform -->
-    <div class="sf-group">
-      <span class="sf-label">平台</span>
-      <div class="sf-chips">
-        <button class="chip active" data-filter="platform" data-value="all">全部</button>
-        <button class="chip active" data-filter="platform" data-value="tiktok">TikTok</button>
-        <button class="chip active" data-filter="platform" data-value="instagram">Instagram</button>
-        <button class="chip active" data-filter="platform" data-value="facebook">Facebook</button>
-      </div>
-    </div>
-
-    <!-- Date -->
-    <div class="sf-date-section">
-      <span class="sf-date-label">日期范围</span>
-
-      <!-- Year multi-select -->
-      <div class="sf-year-chips" id="year-chips"></div>
-
-      <div class="sf-divider-text">快捷选择</div>
-      <div class="sf-quick-items">
-        <div class="sf-quick-item active" data-preset="all"  onclick="selectPreset('all')">全部时间</div>
-        <div class="sf-quick-item" data-preset="7d"   onclick="selectPreset('7d')">最近 7 天</div>
-        <div class="sf-quick-item" data-preset="30d"  onclick="selectPreset('30d')">最近 30 天</div>
-        <div class="sf-quick-item" data-preset="90d"  onclick="selectPreset('90d')">最近 3 个月</div>
-        <div class="sf-quick-item" data-preset="180d" onclick="selectPreset('180d')">最近 6 个月</div>
-        <div class="sf-quick-item" data-preset="1y"   onclick="selectPreset('1y')">最近 1 年</div>
-      </div>
-
-      <div class="sf-custom-section">
-        <div class="sf-custom-row">
-          <span class="sf-custom-lbl">从</span>
-          <input type="date" class="date-input" id="date-from">
-        </div>
-        <div class="sf-custom-row">
-          <span class="sf-custom-lbl">至</span>
-          <input type="date" class="date-input" id="date-to">
-        </div>
-        <div class="sf-btn-row">
-          <button class="btn-apply" onclick="applyCustomDate()">应用</button>
-          <button class="btn-reset" onclick="selectPreset('all')">重置</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Platform counts -->
-    <div class="sidebar-counts">
-      <span class="sidebar-label">数据维度</span>
-      <div class="sidebar-count-item active" id="sidebar-total" onclick="togglePlatform('all')" style="border-left:2px solid var(--blue)">
-        <span style="display:flex;align-items:center;gap:7px">
-          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-6 3 4 2-3 3 5"/></svg>
-          全部内容
-        </span>
-        <span class="sidebar-count-num" id="sidebar-total-num">—</span>
-      </div>
-      <div class="sidebar-count-item" id="sidebar-tiktok" onclick="togglePlatform('tiktok')">
-        <span style="display:flex;align-items:center;gap:7px">
-          <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M9 2h2c.5 2 1.8 2.8 3 3v2c-1.2 0-2.3-.4-3-1v5a4 4 0 11-4-4V9a2 2 0 102 2V2z"/></svg>
-          TikTok
-        </span>
-        <span class="sidebar-count-num" id="sidebar-tiktok-num">—</span>
-      </div>
-      <div class="sidebar-count-item" id="sidebar-ig" onclick="togglePlatform('instagram')">
-        <span style="display:flex;align-items:center;gap:7px">
-          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><circle cx="8" cy="8" r="2.5"/><circle cx="11.5" cy="4.5" r=".5" fill="currentColor"/></svg>
-          Instagram
-        </span>
-        <span class="sidebar-count-num" id="sidebar-ig-num">—</span>
-      </div>
-      <div class="sidebar-count-item" id="sidebar-fb" onclick="togglePlatform('facebook')">
-        <span style="display:flex;align-items:center;gap:7px">
-          <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/></svg>
-          Facebook
-        </span>
-        <span class="sidebar-count-num" id="sidebar-fb-num">—</span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main wrapper -->
-  <div class="main-wrap">
-    <main class="main">
-
-      <!-- Heatmap panel (collapsible, top of main) -->
-      <div class="panel" id="heatmap-panel">
-        <div class="panel-header" style="cursor:pointer;user-select:none" onclick="toggleHeatmapPanel()">
-          <div class="panel-title">
-            <div class="accent-dot"></div>
-            发布热力图
-            <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:4px" id="timeline-range-label"></span>
-          </div>
-          <span class="panel-toggle" id="heatmap-panel-toggle">&#9660;</span>
-        </div>
-        <div class="heatmap-panel-body">
-          <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
-            <span id="heatmap-day-hint-text"></span>
-            <button class="clear-btn" onclick="clearDayFilter()">全部</button>
-          </div>
-          <div class="heatmap-wrap">
-            <table class="heatmap-table" id="timeline-table"></table>
-          </div>
-          <div class="heatmap-legend">
-            <span class="heatmap-legend-label">少</span>
-            <div class="heatmap-legend-squares">
-              <div class="heatmap-legend-sq heat-1"></div>
-              <div class="heatmap-legend-sq heat-2"></div>
-              <div class="heatmap-legend-sq heat-3"></div>
-              <div class="heatmap-legend-sq heat-4"></div>
-              <div class="heatmap-legend-sq heat-5"></div>
-            </div>
-            <span class="heatmap-legend-label">多</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Active filter tags -->
-      <div id="active-filter-tags" class="filter-tags hidden"></div>
-
-      <!-- Stats row -->
-      <div class="stats-row" id="stats-row"></div>
-
-      <!-- Sales process panel (always visible) -->
-      <div class="panel" id="launch-report-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <div class="accent-dot"></div>
-            销售进程
-          </div>
-        </div>
-        <div class="stage-tabs" id="stage-tabs"></div>
-        <div id="stage-panels"></div>
-      </div>
-
-      <!-- Content list -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <div class="accent-dot"></div>
-            内容列表
-            <span class="count-badge" id="content-count-badge">0</span>
-          </div>
-          <div class="sort-row">
-            <button class="sort-btn active" data-sort="date"    data-order="desc">最新</button>
-            <button class="sort-btn"        data-sort="like"    data-order="desc">点赞</button>
-            <button class="sort-btn"        data-sort="comment" data-order="desc">评论</button>
-            <button class="sort-btn"        data-sort="share"   data-order="desc">转发</button>
-          </div>
-        </div>
-        <div class="panel-body" style="padding-bottom:8px">
-          <div class="post-list" id="post-list"></div>
-          <div class="pagination-row">
-            <div class="pagination" id="pagination"></div>
-            <div class="per-page-row">
-              <span class="per-page-label">每页</span>
-              <button class="per-page-btn active" data-pp="20"  onclick="setPerPage(20)">20 条</button>
-              <button class="per-page-btn"        data-pp="50"  onclick="setPerPage(50)">50 条</button>
-              <button class="per-page-btn"        data-pp="100" onclick="setPerPage(100)">100 条</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </main>
-  </div><!-- /main-wrap -->
-</div><!-- /app-layout -->
-
 <script>
-/* ══════════════════════════════════════════
-   State
-══════════════════════════════════════════ */
-let allData = null;
-let filteredPosts = [];
-let currentPage = 1;
-let perPage = 20;
-let selectedDay = null;
-let heatmapPanelCollapsed = false;
-
-const filters = {
-  brands:    new Set(['all']),
-  models:    new Set(['all']),
-  platforms: new Set(['tiktok', 'instagram', 'facebook']),
-  dateFrom:  null,
-  dateTo:    null,
-  sortBy:    'date',
-  sortOrder: 'desc',
-};
-
-/* ══════════════════════════════════════════
-   Boot
-══════════════════════════════════════════ */
 fetch('timeline_data.json')
-  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(r => r.json())
   .then(data => {
-    allData = data;
-    initUI();
-    applyFilters();
-    document.getElementById('loading-overlay').style.display = 'none';
+    const posts = data.all_posts || [];
+
+    const brands = {
+      Toyota: { class: 'toyota', icon: '丰田', fullName: 'Toyota', tagline: '丰田汽车', page: 'toyota.html', color: '#dc2626' },
+      BYD:    { class: 'byd',    icon: 'BYD',  fullName: 'BYD',    tagline: '比亚迪',   page: 'byd.html',    color: '#0891b2' },
+      Ford:   { class: 'ford',   icon: 'Ford',  fullName: 'Ford',   tagline: '福特汽车', page: 'ford.html',   color: '#2563eb' },
+    };
+
+    // Compute per-brand stats
+    const stats = {};
+    posts.forEach(p => {
+      if (!stats[p.brand]) stats[p.brand] = { total: 0, platforms: new Set(), dates: [] };
+      stats[p.brand].total++;
+      if (p.platform) stats[p.brand].platforms.add(p.platform);
+      if (p.date) stats[p.brand].dates.push(p.date);
+    });
+
+    const platLabel = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
+
+    const grid = document.getElementById('brand-grid');
+    grid.innerHTML = Object.entries(brands).map(([key, cfg]) => {
+      const s = stats[key] || { total: 0, platforms: new Set(), dates: [] };
+      const platCount = s.platforms.size;
+      const sorted = [...s.dates].sort();
+      const latestYear = sorted.length ? sorted[sorted.length-1].slice(0,4) : '—';
+      const platBadges = [...s.platforms].map(p => `<span class="plat-badge">${platLabel[p]||p}</span>`).join('');
+
+      return `<a href="${cfg.page}" class="brand-card ${cfg.class}">
+        <div class="brand-card-top">
+          <div class="brand-logo-wrap">
+            <div class="brand-icon">${cfg.icon}</div>
+            <div>
+              <div class="brand-name">${cfg.fullName}</div>
+              <div class="brand-sub">${cfg.tagline}</div>
+            </div>
+          </div>
+          <div class="brand-arrow">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M2.5 6h7M6.5 3l3 3-3 3"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="brand-stats">
+          <div class="brand-stat-item">
+            <div class="brand-stat-label">内容总量</div>
+            <div class="brand-stat-value">${s.total.toLocaleString()}</div>
+          </div>
+          <div class="brand-stat-item">
+            <div class="brand-stat-label">平台数量</div>
+            <div class="brand-stat-value">${platCount}</div>
+          </div>
+          <div class="brand-stat-item">
+            <div class="brand-stat-label">最新年份</div>
+            <div class="brand-stat-value">${latestYear}</div>
+          </div>
+        </div>
+
+        <div class="brand-platforms">${platBadges}</div>
+      </a>`;
+    }).join('');
+
+    // Footer date range
+    const allDates = posts.map(p => p.date).filter(Boolean).sort();
+    if (allDates.length) {
+      document.getElementById('footer-range').textContent =
+        `数据区间：${allDates[0]} — ${allDates[allDates.length-1]}`;
+    }
   })
-  .catch(err => {
-    document.getElementById('loading-overlay').innerHTML = `
-      <div style="text-align:center">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#dc2626">加载失败</div>
-        <div style="color:var(--text-sub);font-size:12px;margin-bottom:14px">${err.message}</div>
-        <button onclick="location.reload()" style="padding:7px 18px;background:var(--blue);border:none;border-radius:6px;color:#fff;font-size:13px;cursor:pointer">重试</button>
-      </div>`;
+  .catch(() => {
+    document.getElementById('brand-grid').innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;color:#dc2626;padding:40px">数据加载失败，请刷新重试。</div>';
   });
-
-/* ══════════════════════════════════════════
-   Heatmap panel collapse
-══════════════════════════════════════════ */
-function toggleHeatmapPanel() {
-  heatmapPanelCollapsed = !heatmapPanelCollapsed;
-  document.getElementById('heatmap-panel').classList.toggle('collapsed', heatmapPanelCollapsed);
-  document.getElementById('heatmap-panel-toggle').classList.toggle('collapsed', heatmapPanelCollapsed);
-}
-
-/* ══════════════════════════════════════════
-   Per-page
-══════════════════════════════════════════ */
-function setPerPage(n) {
-  perPage = n;
-  document.querySelectorAll('.per-page-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.pp) === n);
-  });
-  currentPage = 1;
-  renderPostList();
-}
-
-/* ═��════════════════════════════════════════
-   Date preset
-══════════════════════════════════════════ */
-function selectPreset(preset) {
-  const today = new Date();
-  let from = null, to = null;
-  if (preset === '7d')   { from = daysAgo(7);   to = fmtDate(today); }
-  if (preset === '30d')  { from = daysAgo(30);  to = fmtDate(today); }
-  if (preset === '90d')  { from = daysAgo(90);  to = fmtDate(today); }
-  if (preset === '180d') { from = daysAgo(180); to = fmtDate(today); }
-  if (preset === '1y')   { from = daysAgo(365); to = fmtDate(today); }
-
-  // Clear year selection if choosing a preset
-  if (preset !== 'all') {
-    document.querySelectorAll('.year-chip').forEach(c => c.classList.remove('active'));
-  }
-
-  filters.dateFrom = from;
-  filters.dateTo   = to;
-  document.getElementById('date-from').value = from || '';
-  document.getElementById('date-to').value   = to   || '';
-  document.querySelectorAll('.sf-quick-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.preset === preset);
-  });
-  applyFilters();
-}
-
-function applyCustomDate() {
-  filters.dateFrom = document.getElementById('date-from').value || null;
-  filters.dateTo   = document.getElementById('date-to').value   || null;
-  document.querySelectorAll('.sf-quick-item').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.year-chip').forEach(c => c.classList.remove('active'));
-  applyFilters();
-}
-
-function daysAgo(n) {
-  const d = new Date(); d.setDate(d.getDate() - n); return fmtDate(d);
-}
-function fmtDate(d) {
-  return d.toISOString().slice(0,10);
-}
-
-/* ══════════════════════════════════════════
-   Year chips (multi-select)
-══════════════════════════════════════════ */
-let selectedYears = new Set();
-
-function buildYearChips() {
-  if (!allData) return;
-  const years = new Set();
-  allData.all_posts.forEach(p => { if (p.date) years.add(p.date.slice(0,4)); });
-  const sorted = Array.from(years).sort().reverse();
-  const wrap = document.getElementById('year-chips');
-  wrap.innerHTML = sorted.map(y =>
-    `<button class="chip year-chip" data-year="${y}" onclick="toggleYear('${y}')">${y}</button>`
-  ).join('');
-}
-
-function toggleYear(y) {
-  if (selectedYears.has(y)) {
-    selectedYears.delete(y);
-  } else {
-    selectedYears.add(y);
-  }
-  document.querySelectorAll('.year-chip').forEach(c => {
-    c.classList.toggle('active', selectedYears.has(c.dataset.year));
-  });
-  // Clear quick preset selection when years are manually chosen
-  document.querySelectorAll('.sf-quick-item').forEach(el => el.classList.remove('active'));
-
-  if (selectedYears.size === 0) {
-    filters.dateFrom = null;
-    filters.dateTo   = null;
-    document.getElementById('date-from').value = '';
-    document.getElementById('date-to').value   = '';
-    document.querySelectorAll('.sf-quick-item[data-preset="all"]').forEach(el => el.classList.add('active'));
-  } else {
-    // Build a date range covering all selected years
-    const sortedY = Array.from(selectedYears).sort();
-    filters.dateFrom = `${sortedY[0]}-01-01`;
-    filters.dateTo   = `${sortedY[sortedY.length-1]}-12-31`;
-    document.getElementById('date-from').value = filters.dateFrom;
-    document.getElementById('date-to').value   = filters.dateTo;
-  }
-  applyFilters();
-}
-
-/* ══════════════════════════════════════════
-   initUI
-══════════════════════════════════════════ */
-function initUI() {
-  buildYearChips();
-  updateModelOptions();
-
-  document.querySelectorAll('[data-filter="brand"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.dataset.value;
-      if (val === 'all') {
-        filters.brands.clear(); filters.brands.add('all');
-      } else {
-        filters.brands.delete('all');
-        filters.brands.has(val) ? filters.brands.delete(val) : filters.brands.add(val);
-        if (!filters.brands.size) filters.brands.add('all');
-      }
-      updateBrandChips();
-      filters.models.clear(); filters.models.add('all');
-      updateModelOptions();
-      applyFilters();
-    });
-  });
-
-  document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const val = btn.dataset.value;
-      if (val === 'all') {
-        filters.platforms = filters.platforms.size === 3 ? new Set() : new Set(['tiktok','instagram','facebook']);
-      } else {
-        filters.platforms.has(val) ? filters.platforms.delete(val) : filters.platforms.add(val);
-      }
-      updatePlatformChips();
-      applyFilters();
-    });
-  });
-
-  document.getElementById('model-filter-buttons').addEventListener('click', e => {
-    const btn = e.target.closest('[data-filter="model"]');
-    if (!btn) return;
-    const val = btn.dataset.value;
-    if (val === 'all') {
-      filters.models.clear(); filters.models.add('all');
-    } else {
-      filters.models.delete('all');
-      filters.models.has(val) ? filters.models.delete(val) : filters.models.add(val);
-      if (!filters.models.size) filters.models.add('all');
-      autoSelectBrandForModel(val);
-    }
-    updateModelChips();
-    applyFilters();
-  });
-
-  document.querySelectorAll('.sort-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      filters.sortBy    = btn.dataset.sort;
-      filters.sortOrder = btn.dataset.order;
-      currentPage = 1;
-      applyFilters();
-    });
-  });
-}
-
-/* ══════════════════════════════════════════
-   Chip update helpers
-══════════════════════════════════════════ */
-function updateBrandChips() {
-  document.querySelectorAll('[data-filter="brand"]').forEach(btn => {
-    const v = btn.dataset.value;
-    btn.classList.toggle('active', v === 'all' ? filters.brands.has('all') : filters.brands.has(v));
-  });
-}
-function updatePlatformChips() {
-  document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
-    const v = btn.dataset.value;
-    btn.classList.toggle('active', v === 'all' ? filters.platforms.size === 3 : filters.platforms.has(v));
-  });
-}
-function updateModelChips() {
-  document.querySelectorAll('[data-filter="model"]').forEach(btn => {
-    const v = btn.dataset.value;
-    btn.classList.toggle('active', v === 'all' ? filters.models.has('all') : filters.models.has(v));
-  });
-}
-function updateModelOptions() {
-  const brands = filters.brands.has('all') ? ['BYD','Ford','Toyota'] : Array.from(filters.brands);
-  const available = new Set();
-  if (allData && allData.all_posts) {
-    allData.all_posts.forEach(p => {
-      if (brands.includes(p.brand) && p.models) p.models.forEach(m => available.add(m));
-    });
-  }
-  const wrap = document.getElementById('model-filter-buttons');
-  wrap.innerHTML = '';
-  const allBtn = document.createElement('button');
-  allBtn.className = 'chip active'; allBtn.dataset.filter = 'model'; allBtn.dataset.value = 'all';
-  allBtn.textContent = '全部'; wrap.appendChild(allBtn);
-  Array.from(available).sort().forEach(m => {
-    const b = document.createElement('button');
-    b.className = 'chip'; b.dataset.filter = 'model'; b.dataset.value = m;
-    b.textContent = m; wrap.appendChild(b);
-  });
-  updateModelChips();
-}
-
-/* ══════════════════════════════════════════
-   Brand → Model auto-select
-══════════════════════════════════════════ */
-const BRAND_OF = {
-  Shark:'BYD', Song:'BYD', Qin:'BYD', Yuan:'BYD', Seagull:'BYD',
-  Atto:'BYD', Sealion:'BYD', Denza:'BYD',
-  Ranger:'Ford', Mustang:'Ford', 'F-150':'Ford', Escape:'Ford',
-  Explorer:'Ford', Bronco:'Ford', 'Mach-E':'Ford', GT:'Ford',
-  Hilux:'Toyota', Corolla:'Toyota', Camry:'Toyota', '4Runner':'Toyota',
-  'Land Cruiser':'Toyota', RAV4:'Toyota', Prius:'Toyota',
-  Sequoia:'Toyota', Highlander:'Toyota', Sienna:'Toyota',
-};
-function autoSelectBrandForModel(model) {
-  const brand = BRAND_OF[model];
-  if (brand && !filters.brands.has(brand)) {
-    filters.brands.delete('all'); filters.brands.add(brand); updateBrandChips();
-  }
-}
-
-/* ══════════════════════════════════════════
-   Filter tags
-══════════════════════════════════════════ */
-function renderFilterTags() {
-  const tags = [];
-  if (!filters.brands.has('all'))    Array.from(filters.brands).forEach(v => tags.push({type:'brand',value:v,label:v}));
-  if (!filters.models.has('all'))    Array.from(filters.models).forEach(v => tags.push({type:'model',value:v,label:v}));
-  if (filters.platforms.size !== 3)  Array.from(filters.platforms).forEach(v => tags.push({type:'platform',value:v,label:{tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'}[v]}));
-  if (filters.dateFrom || filters.dateTo) tags.push({type:'date',value:'date',label:`${filters.dateFrom||'—'} ~ ${filters.dateTo||'—'}`});
-  if (selectedDay) tags.push({type:'day',value:selectedDay,label:`逐月: ${selectedDay}`});
-
-  const wrap = document.getElementById('active-filter-tags');
-  if (!tags.length) { wrap.classList.add('hidden'); return; }
-  wrap.classList.remove('hidden');
-  wrap.innerHTML = tags.map(t => `
-    <div class="filter-tag">
-      ${t.label}
-      <button onclick="removeTag('${t.type}','${t.value}')">×</button>
-    </div>`).join('');
-}
-
-function removeTag(type, value) {
-  if (type === 'brand')    { filters.brands.delete(value); if (!filters.brands.size) filters.brands.add('all'); updateBrandChips(); updateModelOptions(); }
-  if (type === 'model')    { filters.models.delete(value); if (!filters.models.size) filters.models.add('all'); updateModelChips(); }
-  if (type === 'platform') { filters.platforms.delete(value); updatePlatformChips(); }
-  if (type === 'date')     { selectPreset('all'); return; }
-  if (type === 'day')      { clearDayFilter(); return; }
-  applyFilters();
-}
-
-/* ══════════════════════════════════════════
-   applyFilters
-══════════════════════════════════════════ */
-function applyFilters() {
-  if (!allData) return;
-
-  filteredPosts = allData.all_posts.filter(p => {
-    if (!filters.brands.has('all') && !filters.brands.has(p.brand)) return false;
-    if (!filters.models.has('all')) {
-      if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
-    }
-    if (!filters.platforms.has(p.platform)) return false;
-    if (filters.dateFrom && p.date < filters.dateFrom) return false;
-    if (filters.dateTo   && p.date > filters.dateTo)   return false;
-    if (selectedDay && p.date !== selectedDay) return false;
-    return true;
-  });
-
-  filteredPosts.sort((a,b) => {
-    let av=0, bv=0;
-    if (filters.sortBy==='date')    { av=new Date(a.date).getTime(); bv=new Date(b.date).getTime(); }
-    else if (filters.sortBy==='like')    { av=a.like||0;    bv=b.like||0; }
-    else if (filters.sortBy==='comment') { av=a.comment||0; bv=b.comment||0; }
-    else if (filters.sortBy==='share')   { av=a.share||0;   bv=b.share||0; }
-    return filters.sortOrder==='desc' ? bv-av : av-bv;
-  });
-
-  currentPage = 1;
-  renderStats();
-  renderTimeline();
-  renderPostList();
-  renderFilterTags();
-  renderSalesProcess();
-  updateSidebarCounts();
-}
-
-/* ══════════════════════════════════════════
-   Stats
-══════════════════════════════════════════ */
-function renderStats() {
-  const wrap = document.getElementById('stats-row');
-  const platCounts = {
-    all:       filteredPosts.length,
-    tiktok:    filteredPosts.filter(p=>p.platform==='tiktok').length,
-    instagram: filteredPosts.filter(p=>p.platform==='instagram').length,
-    facebook:  filteredPosts.filter(p=>p.platform==='facebook').length,
-  };
-  const labels = {all:'全部内容',tiktok:'TikTok',instagram:'Instagram',facebook:'Facebook'};
-  wrap.innerHTML = ['all','tiktok','instagram','facebook'].map(k => {
-    const isActive = k==='all' ? filters.platforms.size===3 : filters.platforms.has(k);
-    return `<div class="stat-card ${isActive?'active':''} platform-${k}" onclick="togglePlatform('${k}')">
-      <div class="stat-card-label">${labels[k]}</div>
-      <div class="stat-card-value">${platCounts[k].toLocaleString()}</div>
-    </div>`;
-  }).join('');
-}
-
-function togglePlatform(plat) {
-  if (plat === 'all') {
-    filters.platforms = filters.platforms.size===3 ? new Set() : new Set(['tiktok','instagram','facebook']);
-  } else {
-    filters.platforms.has(plat) ? filters.platforms.delete(plat) : filters.platforms.add(plat);
-  }
-  updatePlatformChips();
-  applyFilters();
-}
-
-function updateSidebarCounts() {
-  document.getElementById('sidebar-total-num').textContent  = filteredPosts.length.toLocaleString();
-  document.getElementById('sidebar-tiktok-num').textContent = filteredPosts.filter(p=>p.platform==='tiktok').length.toLocaleString();
-  document.getElementById('sidebar-ig-num').textContent     = filteredPosts.filter(p=>p.platform==='instagram').length.toLocaleString();
-  document.getElementById('sidebar-fb-num').textContent     = filteredPosts.filter(p=>p.platform==='facebook').length.toLocaleString();
-}
-
-/* ══════════════════════════════════════════
-   Timeline heatmap
-══════════════════════════════════════════ */
-function renderTimeline() {
-  const table = document.getElementById('timeline-table');
-
-  const basePosts = allData.all_posts.filter(p => {
-    if (!filters.brands.has('all') && !filters.brands.has(p.brand)) return false;
-    if (!filters.models.has('all')) {
-      if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
-    }
-    if (!filters.platforms.has(p.platform)) return false;
-    if (filters.dateFrom && p.date < filters.dateFrom) return false;
-    if (filters.dateTo   && p.date > filters.dateTo)   return false;
-    return true;
-  });
-
-  const dayData = {};
-  basePosts.forEach(p => { dayData[p.date] = (dayData[p.date]||0) + 1; });
-
-  const days = Object.keys(dayData).sort();
-  if (!days.length) { table.innerHTML = ''; return; }
-
-  const maxVal = Math.max(...Object.values(dayData));
-  const monthSet = new Set(days.map(d => d.slice(0,7)));
-  const yms = Array.from(monthSet).sort();
-  const minY = parseInt(yms[0].split('-')[0]);
-  const maxY = parseInt(yms[yms.length-1].split('-')[0]);
-
-  document.getElementById('timeline-range-label').textContent = `${yms[0]} — ${yms[yms.length-1]}`;
-
-  const hint = document.getElementById('heatmap-day-hint');
-  if (selectedDay) {
-    hint.classList.remove('hidden');
-    document.getElementById('heatmap-day-hint-text').textContent = `${selectedDay}（${dayData[selectedDay]||0} 条）`;
-  } else {
-    hint.classList.add('hidden');
-  }
-
-  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  let html = `<tr><th>年</th>${months.map(m=>`<th>${m}</th>`).join('')}</tr>`;
-
-  for (let y=minY; y<=maxY; y++) {
-    html += `<tr><th style="font-weight:700;color:var(--text-sub)">${y}</th>`;
-    for (let m=1; m<=12; m++) {
-      const ym = `${y}-${String(m).padStart(2,'0')}`;
-      const monthDays = Object.entries(dayData).filter(([d]) => d.startsWith(ym));
-      const cnt = monthDays.reduce((s,[,v]) => s+v, 0);
-      const isSelectedMonth = selectedDay && selectedDay.startsWith(ym);
-      if (cnt) {
-        const heat = Math.ceil((cnt/maxVal)*5);
-        const classes = ['has-data', `heat-${heat}`];
-        if (selectedDay) {
-          if (isSelectedMonth) classes.push('day-selected');
-          else classes.push('day-dimmed');
-        }
-        html += `<td class="${classes.join(' ')}" onclick="filterByMonth('${ym}')" title="${ym}: ${cnt} 条">${cnt}</td>`;
-      } else {
-        html += `<td></td>`;
-      }
-    }
-    html += '</tr>';
-  }
-  table.innerHTML = html;
-}
-
-function filterByMonth(ym) {
-  if (selectedDay && selectedDay.startsWith(ym)) {
-    clearDayFilter();
-    return;
-  }
-  const [y, mo] = ym.split('-').map(Number);
-  const first = ym + '-01';
-  const last  = ym + '-' + String(new Date(y, mo, 0).getDate()).padStart(2,'0');
-  selectedDay = ym;
-  filters.dateFrom = first;
-  filters.dateTo   = last;
-  document.getElementById('date-from').value = first;
-  document.getElementById('date-to').value   = last;
-  document.querySelectorAll('.sf-quick-item').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.year-chip').forEach(c => c.classList.remove('active'));
-  applyFilters();
-}
-
-function clearDayFilter() {
-  selectedDay = null;
-  selectPreset('all');
-}
-
-/* ══════════════════════════════════════════
-   Post list
-══════════════════════════════════════════ */
-const CT_CLASS = {
-  'Product':'ct-Product','Campaign':'ct-Campaign','Tech & Safety':'ct-TechSafety',
-  'Brand':'ct-Brand','Owner & UGC':'ct-OwnerUGC','Lifestyle & Scenario':'ct-Lifestyle',
-  'Guide':'ct-Guide','Milestone':'ct-Milestone','Service':'ct-Service',
-  'Creative & Hot Topic':'ct-Creative',
-};
-const CT_LABEL = {
-  'Product':'产品','Campaign':'营销活动','Tech & Safety':'技术安全',
-  'Brand':'品牌','Owner & UGC':'UGC','Lifestyle & Scenario':'生活方式',
-  'Guide':'导购','Milestone':'里程碑','Service':'服务',
-  'Creative & Hot Topic':'创意热点',
-};
-const PLAT_ICON = {
-  tiktok:   `<div class="platform-icon tt">T</div>`,
-  instagram:`<div class="platform-icon ig">IG</div>`,
-  facebook: `<div class="platform-icon fb">f</div>`,
-};
-
-function renderPostList() {
-  const list  = document.getElementById('post-list');
-  const badge = document.getElementById('content-count-badge');
-  badge.textContent = filteredPosts.length.toLocaleString();
-
-  const start = (currentPage - 1) * perPage;
-  const slice = filteredPosts.slice(start, start + perPage);
-
-  if (!slice.length) {
-    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:12px">暂无内容</div>`;
-    document.getElementById('pagination').innerHTML = '';
-    return;
-  }
-
-  list.innerHTML = slice.map(p => renderPostCard(p, true)).join('');
-  renderPagination();
-}
-
-function renderPostCard(p, showStats) {
-  const ctClass = CT_CLASS[p.content_type]||'ct-Other';
-  const ctLabel = CT_LABEL[p.content_type]||'其他';
-  const brandClass = (p.brand||'').toLowerCase();
-  const clickAttr  = p.url ? `onclick="window.open('${p.url.replace(/'/g,"\\'")}','_blank')"` : '';
-
-  let stats = '';
-  if (showStats) {
-    if (p.platform==='tiktok') {
-      if (p.play>=0)    stats += statChip('▶', p.play);
-      if (p.like>=0)    stats += statChip('♥', p.like);
-      if (p.comment>=0) stats += statChip('✦', p.comment);
-      if (p.share>=0)   stats += statChip('↗', p.share);
-    } else {
-      if (p.like>=0)    stats += statChip('♥', p.like);
-      if (p.comment>=0) stats += statChip('✦', p.comment);
-      if (p.share>=0)   stats += statChip('↗', p.share);
-    }
-  }
-
-  const modelTags = p.models && p.models.length
-    ? p.models.map(m=>`<span class="model-tag">${m}</span>`).join('')
-    : '';
-
-  return `<div class="post-card" ${clickAttr}>
-    <div class="post-card-left">${PLAT_ICON[p.platform]||''}</div>
-    <div class="post-card-body">
-      <div class="post-meta">
-        <span class="post-date">${p.date}</span>
-        <span class="post-brand ${brandClass}">${p.brand}</span>
-        <span class="ct-tag ${ctClass}">${ctLabel}</span>
-        ${modelTags}
-      </div>
-      <div class="post-title">${p.text||''}</div>
-    </div>
-    <div class="post-card-right">${stats}</div>
-  </div>`;
-}
-
-function statChip(icon, val) {
-  return `<div class="post-stat"><span class="ico">${icon}</span><span class="val">${(val||0).toLocaleString()}</span></div>`;
-}
-
-function renderPagination() {
-  const total = Math.ceil(filteredPosts.length / perPage);
-  let html = '';
-  if (total <= 1) { document.getElementById('pagination').innerHTML=''; return; }
-
-  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&#8249;</button>`;
-  const range = [];
-  for (let i=1; i<=total; i++) {
-    if (i===1 || i===total || Math.abs(i-currentPage)<=2) range.push(i);
-    else if (range[range.length-1]!=='…') range.push('…');
-  }
-  range.forEach(p => {
-    if (p==='…') html += `<button class="page-btn" disabled>…</button>`;
-    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
-  });
-  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>&#8250;</button>`;
-  document.getElementById('pagination').innerHTML = html;
-}
-
-function goPage(n) {
-  const total = Math.ceil(filteredPosts.length / perPage);
-  if (n<1||n>total) return;
-  currentPage = n;
-  renderPostList();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-/* ══════════════════════════════════════════
-   Sales Process (always visible)
-══════════════════════════════════════════ */
-// 中国区平台列表（当筛选包含这些平台时才显示"工信部申报曝光"）
-const CN_PLATFORMS = new Set(['weibo','douyin','xiaohongshu','wechat','bilibili','微博','抖音','小红书','微信','哔哩哔哩']);
-
-const STAGE_ORDER_BASE = [
-  '项目战略官宣','概念/设计图首发','工信部申报曝光','实车/路测首曝',
-  '核心技术/配置发布','预售开启','正式上市','销量公布','车型常规宣传'
-];
-
-let activeStage = null;
-
-function renderSalesProcess() {
-  const tabsEl   = document.getElementById('stage-tabs');
-  const panelsEl = document.getElementById('stage-panels');
-
-  // 判断当前筛选的帖子是否包含中国区平台数据
-  const hasCnPlatform = filteredPosts.some(p => CN_PLATFORMS.has(p.platform));
-
-  // 动态生成 STAGE_ORDER：无中国区平台数据时过滤掉"工信部申报曝光"
-  const STAGE_ORDER = hasCnPlatform
-    ? STAGE_ORDER_BASE
-    : STAGE_ORDER_BASE.filter(s => s !== '工信部申报曝光');
-
-  // Build staged map from currently filtered posts
-  const staged = {};
-  STAGE_ORDER.forEach(s => staged[s] = []);
-
-  // Determine launch date per brand (earliest "正式上市" post in the full dataset)
-  const launchDates = {};
-  allData.all_posts.forEach(p => {
-    if (p.launch_stage === '正式上市') {
-      if (!launchDates[p.brand] || p.date < launchDates[p.brand]) launchDates[p.brand] = p.date;
-    }
-  });
-
-  filteredPosts.forEach(p => {
-    let s = p.launch_stage;
-    const launchDate = launchDates[p.brand];
-    if (p.model_sales_stage === '车型设计亮点')    s = launchDate && p.date < launchDate ? '核心技术/配置发布' : '车型体验/测评';
-    else if (p.model_sales_stage === '车型体验/测评') s = launchDate && p.date < launchDate ? '实车/路测首曝' : '车型体验/测评';
-    else if (p.model_sales_stage === '车型正式上市') s = '正式上市';
-    else if (p.model_sales_stage === '车型销量成绩') s = '销量公布';
-    else if (p.model_sales_stage === 'UNCLASSIFIED') s = (launchDate && p.date < launchDate) ? '核心技术/配置发布' : '车型常规宣传';
-    if (s && staged[s]) staged[s].push(p);
-  });
-
-  // 若当前 activeStage 不在本次有效 STAGE_ORDER 中（如"工信部申报曝光"被隐藏），重置
-  if (!activeStage || !STAGE_ORDER.includes(activeStage) || !staged[activeStage]) {
-    activeStage = STAGE_ORDER.find(s => staged[s].length > 0) || STAGE_ORDER[0];
-  }
-
-  // Tabs
-  tabsEl.innerHTML = STAGE_ORDER.map(stage => {
-    const cnt = (staged[stage]||[]).length;
-    return `<button class="stage-tab-btn ${stage===activeStage?'active':''}" onclick="switchStage('${stage}')">
-      ${stage}
-      <span class="stage-count">${cnt}</span>
-    </button>`;
-  }).join('');
-
-  // Panels
-  panelsEl.innerHTML = STAGE_ORDER.map(stage => {
-    const sp = (staged[stage]||[]).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const cnt = sp.length;
-    const totalLikes    = sp.reduce((s,p)=>(p.like||0)+s, 0);
-    const totalComments = sp.reduce((s,p)=>(p.comment||0)+s, 0);
-    const totalShares   = sp.reduce((s,p)=>(p.share||0)+s, 0);
-    const dateRange = cnt ? `${sp[sp.length-1].date} — ${sp[0].date}` : '';
-
-    const summaryHtml = cnt ? `
-      <div class="stage-tab-summary">
-        <span>♥ <span class="sum-val">${totalLikes.toLocaleString()}</span></span>
-        <span>✦ <span class="sum-val">${totalComments.toLocaleString()}</span></span>
-        <span>↗ <span class="sum-val">${totalShares.toLocaleString()}</span></span>
-        <span style="margin-left:4px;color:var(--text-dim)">${dateRange}</span>
-      </div>` : `<div style="font-size:11px;color:var(--text-dim)">该阶段暂无内容</div>`;
-
-    const postsHtml = cnt
-      ? sp.map(p => renderPostCard(p, true)).join('')
-      : `<div style="text-align:center;padding:30px;color:var(--text-dim);font-size:12px">暂无内容</div>`;
-
-    return `<div class="stage-panel ${stage===activeStage?'active':''}" data-stage="${stage}">
-      <div class="stage-panel-header">${summaryHtml}</div>
-      <div class="stage-posts-scroll">${postsHtml}</div>
-    </div>`;
-  }).join('');
-}
-
-function switchStage(stage) {
-  activeStage = stage;
-  document.querySelectorAll('.stage-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.trim().startsWith(stage));
-  });
-  document.querySelectorAll('.stage-panel').forEach(panel => {
-    panel.classList.toggle('active', panel.dataset.stage === stage);
-  });
-}
 </script>
 </body>
 </html>

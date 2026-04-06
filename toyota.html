@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toyota · 品牌社交矩阵分析</title>
+<link rel="stylesheet" href="brand-page.css">
+<style>
+  :root {
+    --brand:     #dc2626;
+    --brand-dim: rgba(220,38,38,.07);
+    --brand-mid: rgba(220,38,38,.2);
+  }
+  /* Override heat colors for Toyota red */
+  .heat-1 { background: rgba(220,38,38,.07); }
+  .heat-2 { background: rgba(220,38,38,.15); }
+  .heat-3 { background: rgba(220,38,38,.26); }
+  .heat-4 { background: rgba(220,38,38,.38); }
+  .heat-5 { background: rgba(220,38,38,.52); }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在加载 Toyota 内容数据</div>
+  </div>
+</div>
+
+<header class="topbar">
+  <a href="index.html" class="topbar-back">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 6h-7M5.5 3L2.5 6l3 3"/></svg>
+    返回
+  </a>
+  <div class="topbar-divider"></div>
+  <div class="topbar-logo">
+    <div class="dot"></div>
+    Brand Research
+  </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-sub">Toyota 社交媒体内容分析</div>
+  <span class="topbar-brand-badge">Toyota</span>
+</header>
+
+<div class="app-layout">
+
+  <nav class="sidebar">
+    <div class="sf-group">
+      <span class="sf-label">车型</span>
+      <div class="sf-chips" id="model-filter-buttons">
+        <button class="chip active" data-filter="model" data-value="all">全部</button>
+      </div>
+    </div>
+
+    <div class="sf-group">
+      <span class="sf-label">平台</span>
+      <div class="sf-chips">
+        <button class="chip active" data-filter="platform" data-value="all">全部</button>
+        <button class="chip active" data-filter="platform" data-value="tiktok">TikTok</button>
+        <button class="chip active" data-filter="platform" data-value="instagram">Instagram</button>
+        <button class="chip active" data-filter="platform" data-value="facebook">Facebook</button>
+      </div>
+    </div>
+
+    <div class="sf-date-section">
+      <span class="sf-date-label">日期范围</span>
+      <div class="sf-year-chips" id="year-chips"></div>
+      <div class="sf-divider-text">快捷选择</div>
+      <div class="sf-quick-items">
+        <div class="sf-quick-item active" data-preset="all"  onclick="selectPreset('all')">全部时间</div>
+        <div class="sf-quick-item" data-preset="7d"   onclick="selectPreset('7d')">最近 7 天</div>
+        <div class="sf-quick-item" data-preset="30d"  onclick="selectPreset('30d')">最近 30 天</div>
+        <div class="sf-quick-item" data-preset="90d"  onclick="selectPreset('90d')">最近 3 个月</div>
+        <div class="sf-quick-item" data-preset="180d" onclick="selectPreset('180d')">最近 6 个月</div>
+        <div class="sf-quick-item" data-preset="1y"   onclick="selectPreset('1y')">最近 1 年</div>
+      </div>
+      <div class="sf-custom-section">
+        <div class="sf-custom-row">
+          <span class="sf-custom-lbl">从</span>
+          <input type="date" class="date-input" id="date-from">
+        </div>
+        <div class="sf-custom-row">
+          <span class="sf-custom-lbl">至</span>
+          <input type="date" class="date-input" id="date-to">
+        </div>
+        <div class="sf-btn-row">
+          <button class="btn-apply" onclick="applyCustomDate()">应用</button>
+          <button class="btn-reset" onclick="selectPreset('all')">重置</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-counts">
+      <span class="sidebar-label">数据维度</span>
+      <div class="sidebar-count-item active" id="sidebar-total" onclick="togglePlatform('all')" style="border-left:2px solid var(--brand)">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11l4-6 3 4 2-3 3 5"/></svg>
+          全部内容
+        </span>
+        <span class="sidebar-count-num" id="sidebar-total-num">—</span>
+      </div>
+      <div class="sidebar-count-item" id="sidebar-tiktok" onclick="togglePlatform('tiktok')">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M9 2h2c.5 2 1.8 2.8 3 3v2c-1.2 0-2.3-.4-3-1v5a4 4 0 11-4-4V9a2 2 0 102 2V2z"/></svg>
+          TikTok
+        </span>
+        <span class="sidebar-count-num" id="sidebar-tiktok-num">—</span>
+      </div>
+      <div class="sidebar-count-item" id="sidebar-ig" onclick="togglePlatform('instagram')">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><circle cx="8" cy="8" r="2.5"/><circle cx="11.5" cy="4.5" r=".5" fill="currentColor"/></svg>
+          Instagram
+        </span>
+        <span class="sidebar-count-num" id="sidebar-ig-num">—</span>
+      </div>
+      <div class="sidebar-count-item" id="sidebar-fb" onclick="togglePlatform('facebook')">
+        <span style="display:flex;align-items:center;gap:7px">
+          <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/></svg>
+          Facebook
+        </span>
+        <span class="sidebar-count-num" id="sidebar-fb-num">—</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-wrap">
+    <main class="main">
+
+      <!-- Account Matrix -->
+      <div class="panel matrix-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            账号矩阵
+          </div>
+        </div>
+        <div class="matrix-body">
+          <div id="account-matrix-grid"></div>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="panel" id="heatmap-panel">
+        <div class="panel-header" style="cursor:pointer;user-select:none" onclick="toggleHeatmapPanel()">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            发布热力图
+            <span style="font-size:10px;font-weight:400;color:var(--text-dim);margin-left:4px" id="timeline-range-label"></span>
+          </div>
+          <span class="panel-toggle" id="heatmap-panel-toggle">&#9660;</span>
+        </div>
+        <div class="heatmap-panel-body">
+          <div id="heatmap-day-hint" class="heatmap-day-hint hidden">
+            <span id="heatmap-day-hint-text"></span>
+            <button class="clear-btn" onclick="clearDayFilter()">全部</button>
+          </div>
+          <div class="heatmap-wrap">
+            <table class="heatmap-table" id="timeline-table"></table>
+          </div>
+          <div class="heatmap-legend">
+            <span class="heatmap-legend-label">少</span>
+            <div class="heatmap-legend-squares">
+              <div class="heatmap-legend-sq heat-1"></div>
+              <div class="heatmap-legend-sq heat-2"></div>
+              <div class="heatmap-legend-sq heat-3"></div>
+              <div class="heatmap-legend-sq heat-4"></div>
+              <div class="heatmap-legend-sq heat-5"></div>
+            </div>
+            <span class="heatmap-legend-label">多</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="active-filter-tags" class="filter-tags hidden"></div>
+      <div class="stats-row" id="stats-row"></div>
+
+      <!-- Sales process -->
+      <div class="panel" id="launch-report-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            销售进程
+          </div>
+        </div>
+        <div class="stage-tabs" id="stage-tabs"></div>
+        <div id="stage-panels"></div>
+      </div>
+
+      <!-- Content list -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="accent-dot"></div>
+            内容列表
+            <span class="count-badge" id="content-count-badge">0</span>
+          </div>
+          <div class="sort-row">
+            <button class="sort-btn active" data-sort="date"    data-order="desc">最新</button>
+            <button class="sort-btn"        data-sort="like"    data-order="desc">点赞</button>
+            <button class="sort-btn"        data-sort="comment" data-order="desc">评论</button>
+            <button class="sort-btn"        data-sort="share"   data-order="desc">转发</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding-bottom:8px">
+          <div class="post-list" id="post-list"></div>
+          <div class="pagination-row">
+            <div class="pagination" id="pagination"></div>
+            <div class="per-page-row">
+              <span class="per-page-label">每页</span>
+              <button class="per-page-btn active" data-pp="20"  onclick="setPerPage(20)">20 条</button>
+              <button class="per-page-btn"        data-pp="50"  onclick="setPerPage(50)">50 条</button>
+              <button class="per-page-btn"        data-pp="100" onclick="setPerPage(100)">100 条</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const BRAND_CONFIG = {
+  brand: 'Toyota',
+  cssClass: 'toyota',
+  accounts: [
+    { platform: 'tiktok',    handle: '@toyota',            url: 'https://www.tiktok.com/@toyota',            followers: 1200000, description: '全球官方账号',        region: '全球' },
+    { platform: 'tiktok',    handle: '@toyotamexico',       url: 'https://www.tiktok.com/@toyotamexico',       followers: 320000,  description: '墨西哥官方账号',      region: '墨西哥' },
+    { platform: 'tiktok',    handle: '@toyotausa',          url: 'https://www.tiktok.com/@toyotausa',          followers: 850000,  description: '美国官方账号',        region: '美国' },
+    { platform: 'instagram', handle: '@toyota',            url: 'https://www.instagram.com/toyota/',          followers: 4500000, description: '全球官方 Instagram', region: '全球' },
+    { platform: 'instagram', handle: '@toyotausa',          url: 'https://www.instagram.com/toyotausa/',       followers: 1800000, description: '美国官方 Instagram', region: '美国' },
+    { platform: 'instagram', handle: '@toyotamexico',       url: 'https://www.instagram.com/toyotamexico/',    followers: 560000,  description: '墨西哥官方 Instagram', region: '墨西哥' },
+    { platform: 'facebook',  handle: 'Toyota',              url: 'https://www.facebook.com/toyota',            followers: 10200000,description: '全球官方 Facebook', region: '全球' },
+    { platform: 'facebook',  handle: 'Toyota USA',          url: 'https://www.facebook.com/toyotausa',         followers: 5600000, description: '美国官方 Facebook', region: '美国' },
+    { platform: 'facebook',  handle: 'Toyota Mexico',       url: 'https://www.facebook.com/ToyotaMexico',      followers: 1200000, description: '墨西哥官方 Facebook', region: '墨西哥' },
+  ]
+};
+</script>
+<script src="brand-page.js"></script>
+</body>
+</html>
