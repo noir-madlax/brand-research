@@ -160,15 +160,21 @@ function buildSidebarPlatform() {
   }
 
   // Helper: extract handle from url
-  // Supports: @handle (TikTok/IG), facebook.com/{slug}/posts/..., facebook.com/{slug}/videos/...
+  // Supports: @handle (TikTok/IG), facebook.com/{slug}/posts/..., facebook.com/{slug}/...
   const handleFromUrl = url => {
     if (!url) return null;
     // TikTok / Instagram: @handle
     const atMatch = url.match(/@([\w.]+)/);
     if (atMatch) return atMatch[1];
-    // Facebook: facebook.com/{slug}/posts|videos|reels|...
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)\/(posts|videos|photos|reels)/);
-    if (fbMatch) return fbMatch[1];
+    // Facebook: facebook.com/{slug}/...  — exclude known non-page paths
+    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
+    if (fbMatch) {
+      const slug = fbMatch[1];
+      // Skip paths that are not page slugs
+      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
+        return slug;
+      }
+    }
     return null;
   };
 
@@ -481,8 +487,13 @@ function applyFilters() {
     if (!url) return null;
     const atMatch = url.match(/@([\w.]+)/);
     if (atMatch) return atMatch[1];
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)\/(posts|videos|photos|reels)/);
-    if (fbMatch) return fbMatch[1];
+    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
+    if (fbMatch) {
+      const slug = fbMatch[1];
+      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
+        return slug;
+      }
+    }
     return null;
   };
 
