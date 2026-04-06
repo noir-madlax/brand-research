@@ -209,8 +209,8 @@ function buildSidebarPlatform() {
       const acctKey = `${plat}:${rawHandle.toLowerCase().replace(/\s+/g, '')}`;
       const isAccActive = selectedAccount === acctKey;
       const accCnt = acctCount[acctKey] || 0;
-      // Skip accounts with 0 content
-      if (accCnt === 0) return;
+      // Show all accounts from config regardless of data count
+      // if (accCnt === 0) return;
       html += `<div class="sp-item sp-account ${isAccActive ? 'active' : ''}" data-key="${acctKey}" onclick="selectAccount('${acctKey}')" title="${rawHandle}">
         <span class="sp-label-row sp-account-label">
           <span class="sp-indent"></span>
