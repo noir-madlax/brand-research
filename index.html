@@ -354,20 +354,20 @@ fetch('timeline_data.json')
     // Compute per-brand stats
     const stats = {};
     posts.forEach(p => {
-      if (!stats[p.brand]) stats[p.brand] = { total: 0, platforms: new Set(), dates: [] };
+      if (!stats[p.brand]) stats[p.brand] = { total: 0, platforms: new Set(), accounts: new Set() };
       stats[p.brand].total++;
       if (p.platform) stats[p.brand].platforms.add(p.platform);
-      if (p.date) stats[p.brand].dates.push(p.date);
+      if (p.account) stats[p.brand].accounts.add(p.account);
+      else if (p.handle) stats[p.brand].accounts.add(p.handle);
     });
 
     const platLabel = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
 
     const grid = document.getElementById('brand-grid');
     grid.innerHTML = Object.entries(brands).map(([key, cfg]) => {
-      const s = stats[key] || { total: 0, platforms: new Set(), dates: [] };
+      const s = stats[key] || { total: 0, platforms: new Set(), accounts: new Set() };
       const platCount = s.platforms.size;
-      const sorted = [...s.dates].sort();
-      const latestYear = sorted.length ? sorted[sorted.length-1].slice(0,4) : '—';
+      const acctCount = s.accounts.size;
       const platBadges = [...s.platforms].map(p => `<span class="plat-badge">${platLabel[p]||p}</span>`).join('');
 
       return `<a href="${cfg.page}" class="brand-card ${cfg.class}">
@@ -396,8 +396,8 @@ fetch('timeline_data.json')
             <div class="brand-stat-value">${platCount}</div>
           </div>
           <div class="brand-stat-item">
-            <div class="brand-stat-label">最新年份</div>
-            <div class="brand-stat-value">${latestYear}</div>
+            <div class="brand-stat-label">账号数量</div>
+            <div class="brand-stat-value">${acctCount || '—'}</div>
           </div>
         </div>
 
