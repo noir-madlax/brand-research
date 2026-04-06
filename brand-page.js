@@ -159,25 +159,6 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Helper: extract handle from url
-  // Supports: @handle (TikTok/IG), facebook.com/{slug}/posts/..., facebook.com/{slug}/...
-  const handleFromUrl = url => {
-    if (!url) return null;
-    // TikTok / Instagram: @handle
-    const atMatch = url.match(/@([\w.]+)/);
-    if (atMatch) return atMatch[1];
-    // Facebook: facebook.com/{slug}/...  — exclude known non-page paths
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
-    if (fbMatch) {
-      const slug = fbMatch[1];
-      // Skip paths that are not page slugs
-      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
-        return slug;
-      }
-    }
-    return null;
-  };
-
   // Count posts per platform
   const platCount = {};
   if (allData && allData.all_posts) {
@@ -186,12 +167,13 @@ function buildSidebarPlatform() {
     });
   }
 
-  // Count posts per platform:handle key (lower-cased to avoid case mismatches)
-  // key format: "tiktok:ford", "facebook:fordmexico", etc.
+  // Count posts per platform:username key (using username field from data)
+  // key format: "tiktok:byd_global", "facebook:ford", etc.
   const acctCount = {};
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => {
-      const h = p.account || p.handle || handleFromUrl(p.url);
+      // Use username field directly (already present in data)
+      const h = p.username || p.account_name;
       if (h && p.platform) {
         const key = `${p.platform}:${h.toLowerCase().replace(/\s+/g, '')}`;
         acctCount[key] = (acctCount[key] || 0) + 1;
@@ -483,20 +465,6 @@ function removeTag(type, value) {
 function applyFilters() {
   if (!allData) return;
 
-  const handleFromUrl = url => {
-    if (!url) return null;
-    const atMatch = url.match(/@([\w.]+)/);
-    if (atMatch) return atMatch[1];
-    const fbMatch = url.match(/facebook\.com\/([\w.]+)/);
-    if (fbMatch) {
-      const slug = fbMatch[1];
-      if (!['reel', 'reels', 'watch', 'groups', 'events', 'pages', 'photo', 'video', 'share', 'permalink'].includes(slug.toLowerCase())) {
-        return slug;
-      }
-    }
-    return null;
-  };
-
   filteredPosts = allData.all_posts.filter(p => {
     if (!filters.models.has('all')) {
       if (!p.models || !Array.from(filters.models).some(m => p.models.includes(m))) return false;
@@ -505,13 +473,14 @@ function applyFilters() {
     if (filters.dateFrom && p.date < filters.dateFrom) return false;
     if (filters.dateTo   && p.date > filters.dateTo)   return false;
     if (selectedDay && p.date !== selectedDay) return false;
-    // account-level filter (key format: "platform:handleslug")
+    // account-level filter (key format: "platform:username")
     if (selectedAccount && selectedAccount.includes(':')) {
-      const [acctPlat, acctHandle] = selectedAccount.split(':');
+      const [acctPlat, acctUsername] = selectedAccount.split(':');
       if (p.platform !== acctPlat) return false;
-      const rawPostHandle = p.account || p.handle || handleFromUrl(p.url);
-      const postHandle = rawPostHandle ? rawPostHandle.toLowerCase().replace(/\s+/g, '') : null;
-      if (postHandle !== acctHandle) return false;
+      // Use username field directly from data
+      const postUsername = p.username || p.account_name;
+      const normalizedUsername = postUsername ? postUsername.toLowerCase().replace(/\s+/g, '') : null;
+      if (normalizedUsername !== acctUsername) return false;
     }
     return true;
   });
@@ -534,7 +503,7 @@ function applyFilters() {
   updateSidebarCounts();
 }
 
-/* ══════════════════════════════════════════
+/* ���═════════════════════════════════════════
    Stats
 ══════════════════════════════════════════ */
 function renderStats() {
