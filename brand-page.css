@@ -525,3 +525,36 @@ a.matrix-handle:hover { color: var(--brand); }
 .ct-Service     { background: rgba(16,185,129,.07);  color: #10b981; }
 .ct-Creative    { background: rgba(239,68,68,.07);   color: #ef4444; }
 .ct-Other       { background: rgba(107,114,128,.07); color: #6b7280; }
+
+/* ── Site Footer ── */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: #fff;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.site-footer .footer-logo {
+  display: flex; align-items: center; gap: 5px;
+  text-decoration: none;
+}
+.site-footer .footer-logo-text {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: -.3px;
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 40%, #f59e0b 80%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.site-footer .footer-sep {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+}
+.site-footer .footer-date {
+  color: var(--text-dim);
+}
