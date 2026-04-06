@@ -352,13 +352,20 @@ fetch('timeline_data.json')
     };
 
     // Compute per-brand stats
+    // Extract @handle from URL, e.g. https://www.tiktok.com/@byd_global/video/...
+    const handleFromUrl = url => {
+      if (!url) return null;
+      const m = url.match(/@([\w.]+)/);
+      return m ? m[1] : null;
+    };
+
     const stats = {};
     posts.forEach(p => {
       if (!stats[p.brand]) stats[p.brand] = { total: 0, platforms: new Set(), accounts: new Set() };
       stats[p.brand].total++;
       if (p.platform) stats[p.brand].platforms.add(p.platform);
-      if (p.account) stats[p.brand].accounts.add(p.account);
-      else if (p.handle) stats[p.brand].accounts.add(p.handle);
+      const handle = p.account || p.handle || handleFromUrl(p.url);
+      if (handle) stats[p.brand].accounts.add(handle);
     });
 
     const platLabel = { tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook' };
