@@ -271,8 +271,6 @@ function setPerPage(n) {
 function selectPreset(preset) {
   const today = new Date();
   let from = null, to = null;
-  if (preset === '7d')   { from = daysAgo(7);   to = fmtDate(today); }
-  if (preset === '30d')  { from = daysAgo(30);  to = fmtDate(today); }
   if (preset === '90d')  { from = daysAgo(90);  to = fmtDate(today); }
   if (preset === '180d') { from = daysAgo(180); to = fmtDate(today); }
   if (preset === '1y')   { from = daysAgo(365); to = fmtDate(today); }
@@ -351,7 +349,7 @@ function toggleYear(y) {
 
 /* ═════════════════════════��════════════════
    initUI
-══════════════════════════════════════════ */
+═════════════════════════════════════════��� */
 function initUI() {
   buildYearChips();
   updateModelOptions();
@@ -708,11 +706,14 @@ function renderPostCard(p, showStats) {
     ? p.models.map(m=>`<span class="model-tag">${m}</span>`).join('')
     : '';
 
+  const accountName = p.username || p.account_name || '';
+
   return `<div class="post-card" ${clickAttr}>
     <div class="post-card-left">${PLAT_ICON[p.platform]||''}</div>
     <div class="post-card-body">
       <div class="post-meta">
         <span class="post-date">${p.date}</span>
+        ${accountName ? `<span class="post-account">@${accountName}</span>` : ''}
         <span class="ct-tag ${ctClass}">${ctLabel}</span>
         ${modelTags}
       </div>
