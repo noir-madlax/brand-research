@@ -2,6 +2,9 @@
 output/
 output.zip
 __MACOSX/
+Archive(2)/
+Archive(2).zip
+push_log.txt
 
 # macOS
 .DS_Store
@@ -12,3 +15,9 @@ __pycache__/
 *.pyc
 .vercel
 .env*.local
+
+# 原始大数据文件（已拆分为按品牌分割的文件）
+timeline_data.json
+
+# 临时文件
+split_data_by_brand.py
