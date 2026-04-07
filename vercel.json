@@ -1,7 +1,13 @@
 {
   "version": 2,
-  "name": "brand-research",
+  "name": "wantai-research-platform",
   "public": true,
   "devCommand": "npx serve . --listen 3000",
-  "installCommand": "npm install -g serve"
+  "installCommand": "npm install -g serve",
+  "buildCommand": "echo 'Build complete'",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

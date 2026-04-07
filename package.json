@@ -1,12 +1,23 @@
 {
-  "name": "brand-research",
-  "version": "1.0.0",
+  "name": "wantai-research-platform",
+  "version": "2.0.0",
+  "description": "Brand Research Platform & Data Collection Tools - 品牌研究平台与数据收集工具",
   "private": true,
   "scripts": {
     "dev": "npx serve . --listen 3000 --no-clipboard",
-    "start": "npx serve . --listen 3000 --no-clipboard"
+    "start": "npx serve . --listen 3000 --no-clipboard",
+    "scraper:bydauto": "node tools/data-scraper/apify_bydauto_scraper.js",
+    "scraper:complete": "node tools/data-scraper/apify_complete_scraper.js",
+    "scraper:tiktok": "python3 tools/data-scraper/tiktok_scraper.py",
+    "scraper:statista": "python3 tools/data-scraper/statista_downloader.py"
   },
   "dependencies": {
-    "serve": "^14.2.4"
+    "serve": "^14.2.4",
+    "apify-client": "^2.22.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20.6.0"
   }
 }

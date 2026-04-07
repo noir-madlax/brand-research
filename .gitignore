@@ -1,10 +1,12 @@
 # 大型数据文件（不纳入 git）
 output/
 output.zip
+output\ 2/
 __MACOSX/
 Archive(2)/
 Archive(2).zip
 push_log.txt
+downloads/
 
 # macOS
 .DS_Store
@@ -13,11 +15,41 @@ push_log.txt
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
 .vercel
 .env*.local
 
+# 环境配置
+.env
+.env.local
+.env.*.local
+
 # 原始大数据文件（已拆分为按品牌分割的文件）
 timeline_data.json
+*_data.json
 
 # 临时文件
 split_data_by_brand.py
+*.tmp
+*.log
+*.gz
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 爬虫临时数据
+tiktok_apify_data/
+tiktok_data/
+chromedriver*

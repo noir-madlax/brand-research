@@ -1,0 +1,24 @@
+{
+  "name": "data-searcher",
+  "version": "1.0.0",
+  "description": "Statista and TikTok data scraper with Apify integration",
+  "type": "module",
+  "scripts": {
+    "apify": "npx skills add https://github.com/apify/agent-skills --skill apify-ultimate-scraper"
+  },
+  "keywords": [
+    "scraper",
+    "statista",
+    "tiktok",
+    "apify"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "dependencies": {
+    "apify-client": "^2.22.3",
+    "xlsx": "^0.18.5"
+  }
+}
