@@ -6,6 +6,7 @@
 <title>Ford · 品牌社交矩阵分析</title>
 <link rel="preload" href="data/ford.json" as="fetch" crossorigin="anonymous">
 <link rel="stylesheet" href="brand-page.css">
+<script src="auth.js"></script>
 <style>
   :root {
     --brand:     #2563eb;
@@ -37,6 +38,10 @@
   <div class="topbar-divider"></div>
   <div class="topbar-sub">Ford 社交媒体内容分析</div>
   <span class="topbar-brand-badge">Ford</span>
+  <button class="topbar-logout" id="logoutBtn">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7.5 2h2.5v8h-2.5M5 6h3.5M5 6l2-2m-2 2l2 2"/></svg>
+    登出
+  </button>
 </header>
 
 <div class="app-layout">
@@ -223,6 +228,16 @@ const BRAND_CONFIG = {
 };
 </script>
 <script src="brand-page.js"></script>
+
+<script>
+  // 登出功能
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm('确定要登出吗？')) {
+      Auth.logout();
+      window.location.href = 'login.html';
+    }
+  });
+</script>
 
 <footer class="site-footer">
   <span class="footer-logo">
