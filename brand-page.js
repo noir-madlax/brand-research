@@ -31,7 +31,7 @@ let selectedAccounts = new Set();
 
 const filters = {
   models:    new Set(['all']),
-  platforms: new Set(['tiktok', 'instagram', 'facebook', 'bilibili', '抖音', '微博', '小红书', '微信公众号']),
+  platforms: new Set(['tiktok', 'instagram', 'facebook', 'Bilibili', '抖音', '微博', '小红书', '微信公众号']),
   dateFrom:  null,
   dateTo:    null,
   sortBy:    'date',
@@ -85,7 +85,7 @@ const PLAT_INFO = {
   facebook:  { label: 'Facebook',    cls: 'fb', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm1 8H8v4H6V9H5V7h1V6a2 2 0 012-2h2v2H9a.5.5 0 00-.5.5V7H11l-.5 2H8.5z"/></svg>' },
   youtube:   { label: 'YouTube',     cls: 'yt', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 4.5s-.2-1.3-.7-1.8c-.7-.7-1.5-.7-1.9-.8C10.2 2 8 2 8 2s-2.2 0-3.9.2c-.4 0-1.2.1-1.9.8-.5.5-.7 1.8-.7 1.8S1.5 6 1.5 7.5v1.3c0 1.5.2 3 .2 3s.2 1.3.7 1.8c.7.7 1.6.7 2 .8 1.5.1 6.3.2 6.3.2s2.2 0 3.9-.3c.4 0 1.2-.1 1.9-.8.5-.5.7-1.8.7-1.8s.2-1.5.2-3V7.5c0-1.5-.2-3-.2-3zM6.5 10V6l4 2-4 2z"/></svg>' },
   twitter:   { label: 'X / Twitter', cls: 'tw', svg: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M12.6 2h2.1L9.9 7.2 15.5 14h-4.2L8 9.8 4.3 14H2.2l5.2-5.6L2 2h4.3l2.9 4 3.4-4zm-.7 10.8h1.1L4.3 3.2H3.1l8.8 9.6z"/></svg>' },
-  bilibili:  { label: 'Bilibili',    cls: 'bl', svg: '<svg viewBox="0 0 100 100" fill="currentColor"><rect width="100" height="100" fill="#00ACED5" rx="20"/><text x="50" y="65" font-size="60" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">B</text></svg>' },
+  Bilibili:  { label: 'Bilibili',    cls: 'bl', svg: '<svg viewBox="0 0 100 100" fill="currentColor"><rect width="100" height="100" fill="#00ACED5" rx="20"/><text x="50" y="65" font-size="60" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">B</text></svg>' },
   抖音:      { label: '抖音',         cls: 'dy', svg: '<svg viewBox="0 0 100 100" fill="currentColor"><g transform="translate(50,50)"><path d="M-8,-20 Q0,-15 8,-20 Q12,-18 15,-12 L15,-5 Q15,5 5,12 Q-5,12 -15,5 L-15,-5 Q-15,-18 -8,-20 Z" fill="#FF2050" opacity="0.9"/><circle cx="0" cy="-8" r="6" fill="#00F7FF"/><circle cx="0" cy="8" r="6" fill="white"/></g></svg>' },
   微博:      { label: '微博',         cls: 'wb', svg: '<svg viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="48" fill="#E71F1F"/><ellipse cx="35" cy="40" rx="18" ry="16" fill="white"/><ellipse cx="65" cy="40" rx="18" ry="16" fill="white"/><circle cx="32" cy="38" r="6" fill="#E71F1F"/><circle cx="62" cy="38" r="6" fill="#E71F1F"/><path d="M 30,58 Q 50,68 70,58" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/></svg>' },
   小红书:    { label: '小红书',       cls: 'xh', svg: '<svg viewBox="0 0 100 100" fill="currentColor"><rect width="100" height="100" fill="white"/><g transform="translate(50,50)"><rect x="-22" y="-22" width="44" height="44" rx="6" fill="#E02E24"/><text x="0" y="10" font-size="30" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">小</text></g></svg>' },
@@ -109,7 +109,7 @@ function renderAccountMatrix() {
     grouped[p].push(acc);
   });
 
-  const platOrder = ['tiktok', 'instagram', 'facebook', 'youtube', 'twitter', 'Bilibili', 'bilibili', '抖音', '微博', '小红书', '微信公众号'];
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'youtube', 'twitter', 'Bilibili', '抖音', '微博', '小红书', '微信公众号'];
   const rows = platOrder.filter(p => grouped[p]);
 
   wrap.innerHTML = rows.map(plat => {
@@ -169,7 +169,7 @@ function buildSidebarPlatform() {
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => { if (p.platform) platSet.add(p.platform); });
   }
-  const platOrder = ['tiktok', 'instagram', 'facebook', 'youtube', 'twitter', 'Bilibili', 'bilibili', '抖音', '微博', '小红书', '微信公众号'];
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'youtube', 'twitter', 'Bilibili', '抖音', '微博', '小红书', '微信公众号'];
   const platforms = platOrder.filter(p => platSet.has(p));
 
   // Group accounts by platform from BRAND_CONFIG (保留原始平台名)
@@ -470,7 +470,7 @@ function updatePlatformChips() {
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => { if (p.platform) platSet.add(p.platform); });
   }
-  const platOrder = ['tiktok', 'instagram', 'facebook', 'bilibili', '抖音', '微博', '小红书', '微信公众号'];
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'Bilibili', '抖音', '微博', '小红书', '微信公众号'];
   const activePlats = platOrder.filter(p => platSet.has(p));
 
   document.querySelectorAll('[data-filter="platform"]').forEach(btn => {
@@ -512,7 +512,7 @@ function renderFilterTags() {
   if (!filters.models.has('all'))    Array.from(filters.models).forEach(v => tags.push({type:'model',value:v,label:v}));
   const PLAT_LABEL_MAP = {
     tiktok:'TikTok', instagram:'Instagram', facebook:'Facebook', youtube:'YouTube', twitter:'X/Twitter',
-    Bilibili:'Bilibili', bilibili:'Bilibili', '抖音':'抖音', '微博':'微博', '小红书':'小红书', '微信公众号':'微信公众号'
+    Bilibili:'Bilibili', '抖音':'抖音', '微博':'微博', '小红书':'小红书', '微信公众号':'微信公众号'
   };
   selectedAccounts.forEach(k => {
     let acctLabel;
@@ -617,7 +617,7 @@ function renderStats() {
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => { if (p.platform) platSet.add(p.platform); });
   }
-  const platOrder = ['tiktok', 'instagram', 'facebook', 'Bilibili', 'bilibili', '抖音', '微博', '小红书', '微信公众号'];
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'Bilibili', '抖音', '微博', '小红书', '微信公众号'];
   const activePlats = platOrder.filter(p => platSet.has(p));
 
   const platCounts = { all: filteredPosts.length };
@@ -627,7 +627,7 @@ function renderStats() {
 
   const labels = {
     all:'全部内容', tiktok:'TikTok', instagram:'Instagram', facebook:'Facebook',
-    Bilibili:'Bilibili', bilibili:'Bilibili', '抖音':'抖音', '微博':'微博', '小红书':'小红书', '微信公众号':'微信公众号'
+    Bilibili:'Bilibili', '抖音':'抖音', '微博':'微博', '小红书':'小红书', '微信公众号':'微信公众号'
   };
 
   const cards = ['all', ...activePlats];
@@ -646,7 +646,7 @@ function togglePlatform(plat) {
   if (allData && allData.all_posts) {
     allData.all_posts.forEach(p => { if (p.platform) platSet.add(p.platform); });
   }
-  const platOrder = ['tiktok', 'instagram', 'facebook', 'Bilibili', 'bilibili', '抖音', '微博', '小红书', '微信公众号'];
+  const platOrder = ['tiktok', 'instagram', 'facebook', 'Bilibili', '抖音', '微博', '小红书', '微信公众号'];
   const activePlats = platOrder.filter(p => platSet.has(p));
 
   if (plat === 'all') {
@@ -878,7 +878,7 @@ function goPage(n) {
 /* ══════════════════════════════════════════
    Sales Process
 ══════════════════════════════════════════ */
-const CN_PLATFORMS = new Set(['weibo','douyin','xiaohongshu','wechat','bilibili','weixin','xhs','微博','抖音','小红书','微信公众号','Bilibili']);
+const CN_PLATFORMS = new Set(['weibo','douyin','xiaohongshu','wechat','Bilibili','weixin','xhs','微博','抖音','小红书','微信公众号']);
 const STAGE_ORDER_BASE = [
   '项目战略官宣','概念/设计图首发','工信部申报曝光','实车/路测首曝',
   '核心技术/配置发布','预售开启','正式上市','销量公布','车型常规宣传'
